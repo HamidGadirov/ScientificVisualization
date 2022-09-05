@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shaders/passthrough2d.vert</file>
+        <file>shaders/glyphsshading.frag</file>
+        <file>shaders/glyphsshading.vert</file>
+        <file>shaders/scalarData_clamp.vert</file>
+        <file>shaders/scalarData_scale.vert</file>
+        <file>shaders/scalarData_texture.frag</file>
+        <file>shaders/isolines.frag</file>
+        <file>shaders/isolines.vert</file>
+        <file>shaders/heightplot.frag</file>
+        <file>shaders/heightplot_clamp.vert</file>
+        <file>shaders/heightplot_scale.vert</file>
+        <file>shaders/scalarData_customcolormap.frag</file>
+        <file>shaders/lic.vert</file>
+        <file>shaders/lic.frag</file>
+        <file>shaders/volume_rendering.vert</file>
+        <file>shaders/volume_rendering.frag</file>
+        <file>shaders/volume_rendering2.frag</file>
+    </qresource>
+</RCC>
