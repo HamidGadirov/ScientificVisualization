@@ -179,7 +179,7 @@ void Visualization::drawGlyphs()
     std::transform(vectorMagnitude.begin(), vectorMagnitude.end(), vectorMagnitude.begin(),
                    std::bind(std::multiplies<>(), std::placeholders::_1, m_vectorDataMagnifier));
 
-    if (m_sendMinMaxToUI)
+    if (m_sendMinMaxToUI && !vectorMagnitude.empty())
     {
         auto const currentMinMaxIt = std::minmax_element(vectorMagnitude.cbegin(), vectorMagnitude.cend());
         QVector2D const currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
@@ -208,6 +208,7 @@ void Visualization::drawGlyphs()
      * vectorDirectionX, vectorDirectionY: To which direction the glyph should point. Row-major, size given by the m_numberOfGlyphs*.
      * vectorMagnitude: Use this value to scale the glyphs. I.e. higher values are visualized using larger glyphs. Row-major, size given by the m_numberOfGlyphs*.
      */
+    modelTransformationMatrices = std::vector<float>(numberOfInstances * 16U, 0.0F); // Remove this placeholder initialization
 
 
     glBindVertexArray(0);
@@ -226,14 +227,6 @@ void Visualization::drawGlyphs()
     void * const dataPtr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     memcpy(dataPtr, modelTransformationMatrices.data(), modelTransformationMatrices.size() * sizeof(float));
     glUnmapBuffer(GL_ARRAY_BUFFER);
-    // The primitive glMapBuffer() approach was chosen for potentially faster upload speed on this large amount of data.
-    /*
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboModelTransformationMatricesGlyphs);
-    glBufferSubData(GL_ARRAY_BUFFER,
-                    0,
-                    static_cast<GLsizeiptr>(modelTransformationMatrices.size() * sizeof(float)),
-                    modelTransformationMatrices.data());
-    */
 
     if (m_currentGlyphType == Glyph::GlyphType::Hedgehog)
         glDrawElementsInstanced(GL_LINES,

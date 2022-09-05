@@ -30,6 +30,6 @@ void main()
 
     // Placeholder values
     value = clampMin + clampMax;
-    shading = transferK = material.x + lightPosition.x;
+    shading = transferK + material.x + lightPosition.x;
     heightChange = normalTransform[0][0];
 }
