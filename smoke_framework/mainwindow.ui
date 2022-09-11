@@ -27,7 +27,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="SimulationSettingsPage">
        <property name="autoFillBackground">
@@ -294,39 +294,6 @@
           <property name="text">
            <string>Load data</string>
           </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="VisualizationPage">
-       <attribute name="title">
-        <string>Visualization</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_10">
-        <item>
-         <widget class="QGroupBox" name="visualizationProjectionGroupBox">
-          <property name="title">
-           <string>Projection</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_8">
-           <item>
-            <widget class="QRadioButton" name="visualizationProjectionOrthographicRadioButton">
-             <property name="text">
-              <string>Orthographic</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="visualizationProjectionPerspectiveRadioButton">
-             <property name="text">
-              <string>Perspective</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </widget>
         </item>
        </layout>
@@ -1901,7 +1868,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>23</height>
+     <height>37</height>
     </rect>
    </property>
   </widget>
@@ -1941,86 +1908,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>scalarDataColorMapNumberOfColorsSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>scalarDataColorMapNumberOfColorsSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>157</x>
-     <y>364</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>495</x>
-     <y>368</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>scalarDataColorMapNumberOfColorsSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>scalarDataColorMapNumberOfColorsSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>495</x>
-     <y>368</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>364</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfColorsSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfColorsSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>92</x>
-     <y>720</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>547</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfColorsSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfColorsSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>547</x>
-     <y>725</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>92</x>
-     <y>720</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>isolinesNumberOfIsolinesSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>isolinesNumberOfIsolinesSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>69</x>
-     <y>531</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>559</x>
-     <y>536</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>isolinesNumberOfIsolinesSpinBox</sender>
    <signal>valueChanged(int)</signal>
    <receiver>isolinesNumberOfIsolinesSlider</receiver>
@@ -2033,70 +1920,6 @@
     <hint type="destinationlabel">
      <x>69</x>
      <y>531</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>gridpointsSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>gridpointsSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>559</x>
-     <y>613</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>314</x>
-     <y>608</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfGlyphsHorizontalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfGlyphsHorizontalSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>199</x>
-     <y>203</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>559</x>
-     <y>208</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfGlyphsHorizontalSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfGlyphsHorizontalSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>559</x>
-     <y>208</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>203</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfGlyphsVerticalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfGlyphsVerticalSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>205</x>
-     <y>275</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>559</x>
-     <y>280</y>
     </hint>
    </hints>
   </connection>
@@ -2133,34 +1956,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>scalarDataMinLcdNumber</receiver>
-   <slot>setVisible(bool)</slot>
+   <sender>vectorDataNumberOfGlyphsVerticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfGlyphsVerticalSpinBox</receiver>
+   <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>245</x>
-     <y>128</y>
+     <x>205</x>
+     <y>275</y>
     </hint>
     <hint type="destinationlabel">
-     <x>675</x>
-     <y>679</y>
+     <x>559</x>
+     <y>280</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>scalarDataMaxLcdNumber</receiver>
-   <slot>setVisible(bool)</slot>
+   <sender>gridpointsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>gridpointsSlider</receiver>
+   <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>258</x>
-     <y>129</y>
+     <x>559</x>
+     <y>613</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1188</x>
-     <y>697</y>
+     <x>314</x>
+     <y>608</y>
     </hint>
    </hints>
   </connection>
@@ -2181,18 +2004,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>vectorDataMaxLcdNumber</receiver>
-   <slot>setVisible(bool)</slot>
+   <sender>vectorDataNumberOfGlyphsHorizontalSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfGlyphsHorizontalSlider</receiver>
+   <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>258</x>
-     <y>129</y>
+     <x>559</x>
+     <y>208</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1188</x>
-     <y>746</y>
+     <x>199</x>
+     <y>203</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfColorsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfColorsSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>547</x>
+     <y>725</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>92</x>
+     <y>720</y>
     </hint>
    </hints>
   </connection>
@@ -2225,6 +2064,134 @@
     <hint type="destinationlabel">
      <x>452</x>
      <y>727</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showMinMaxDataCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>scalarDataMinLcdNumber</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>245</x>
+     <y>128</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>675</x>
+     <y>679</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scalarDataColorMapNumberOfColorsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>scalarDataColorMapNumberOfColorsSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>495</x>
+     <y>368</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>364</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scalarDataColorMapNumberOfColorsSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>scalarDataColorMapNumberOfColorsSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>364</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>495</x>
+     <y>368</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfColorsSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfColorsSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>92</x>
+     <y>720</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>547</x>
+     <y>725</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showMinMaxDataCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>vectorDataMaxLcdNumber</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>258</x>
+     <y>129</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1188</x>
+     <y>746</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showMinMaxDataCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>scalarDataMaxLcdNumber</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>258</x>
+     <y>129</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1188</x>
+     <y>697</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfGlyphsHorizontalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfGlyphsHorizontalSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>203</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>559</x>
+     <y>208</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>isolinesNumberOfIsolinesSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>isolinesNumberOfIsolinesSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>69</x>
+     <y>531</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>559</x>
+     <y>536</y>
     </hint>
    </hints>
   </connection>
