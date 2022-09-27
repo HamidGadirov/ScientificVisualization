@@ -171,12 +171,20 @@ private slots:
 
     // Volume rendering, draw on/off.
     void on_drawVolumeRenderingCheckBox_toggled(bool checked);
+    void on_timeStepVolumeRenderingGroupBoxSpinBox_valueChanged(int arg1);
+    void on_volumeRenderingSyntheticCubeRadioButton_toggled(bool checked);
+    void on_volumeRenderingSyntheticSceneRadioButton_toggled(bool checked);
+    void on_volumeRenderingDataRawRadioButton_toggled(bool checked);
+    void on_volumeRenderingSelectDatFilePushButton_clicked();
+    void on_volumeRenderingFragmentShaderSelectionVolumenRenderingRadioButton_clicked();
+    void on_volumeRenderingFragmentShaderSelectionVolumetricLightingRadioButton_clicked();
 
     // Setters
     void setScalarDataMin(float const min);
     void setScalarDataMax(float const max);
     void setVectorDataMin(float const min);
     void setVectorDataMax(float const max);
+
 
 private:
     Ui::MainWindow *ui;

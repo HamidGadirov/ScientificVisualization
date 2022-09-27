@@ -210,7 +210,6 @@ void Visualization::drawGlyphs()
      */
     modelTransformationMatrices = std::vector<float>(numberOfInstances * 16U, 0.0F); // Remove this placeholder initialization
 
-
     glBindVertexArray(0);
 
     // Buffering section starts here.

@@ -44,6 +44,24 @@ HEADERS += \
         colormap.h \
         constants.h \
         datatype.h \
+        datraw.h \
+        datraw/convert.h \
+        datraw/convert.inl \
+        datraw/endianness.h \
+        datraw/grid_type.h \
+        datraw/info.h \
+        datraw/info.inl \
+        datraw/literal.h \
+        datraw/parse.h \
+        datraw/parse.inl \
+        datraw/raw_reader.h \
+        datraw/raw_reader.inl \
+        datraw/scalar_type.h \
+        datraw/string.h \
+        datraw/string.inl \
+        datraw/types.h \
+        datraw/variant.h \
+        datraw/variant.inl \
         glyph.h \
         interpolation.h \
         isoline.h \

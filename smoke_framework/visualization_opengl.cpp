@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include <QVector3D>
+#include <QVector4D>
 
 // Generate all necessary VAOs, VBOs, EBOs and texture names
 void Visualization::opengl_generateObjects()
@@ -38,6 +40,7 @@ void Visualization::opengl_generateObjects()
     glGenVertexArrays(1, &m_vaoVolumeRendering);
     glGenBuffers(1, &m_vboVolumeRendering);
     glGenBuffers(1, &m_eboVolumeRendering);
+    glGenTextures(1, &m_volumeRenderingTextureLocation);
 }
 
 void Visualization::opengl_createShaderPrograms()
@@ -52,6 +55,7 @@ void Visualization::opengl_createShaderPrograms()
     opengl_createShaderProgramHeightplotClamp();
     opengl_createShaderProgramLic();
     opengl_createShaderProgramVolumeRendering();
+    opengl_createShaderProgramVolumeRenderingLighting();
 }
 
 void Visualization::opengl_setupAllBuffers()
@@ -97,6 +101,7 @@ void Visualization::opengl_deleteObjects()
     glDeleteVertexArrays(1, &m_vaoVolumeRendering);
     glDeleteBuffers(1, &m_vboVolumeRendering);
     glDeleteBuffers(1, &m_eboVolumeRendering);
+    glDeleteTextures(1, &m_volumeRenderingTextureLocation);
 }
 
 void Visualization::opengl_loadScalarDataTexture(std::vector<Color> const &colorMap)
@@ -374,6 +379,9 @@ void Visualization::opengl_setupVolumeRendering()
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D), reinterpret_cast<GLvoid*>(0));
+
+    // Load synthetic cube data by default
+    opengl_updateTextureSyntheticCube();
 }
 
 void Visualization::opengl_createShaderProgramScalarDataScaleTexture()
@@ -572,7 +580,7 @@ void Visualization::opengl_createShaderProgramLic()
 void Visualization::opengl_createShaderProgramVolumeRendering()
 {
     m_shaderProgramVolumeRendering.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/volume_rendering.vert");
-    m_shaderProgramVolumeRendering.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_rendering2.frag");
+    m_shaderProgramVolumeRendering.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_rendering.frag");
     m_shaderProgramVolumeRendering.link();
 
     m_uniformLocationVolumeRendering_iTime = m_shaderProgramVolumeRendering.uniformLocation("iTime");
@@ -581,9 +589,34 @@ void Visualization::opengl_createShaderProgramVolumeRendering()
     m_uniformLocationVolumeRendering_iResolution = m_shaderProgramVolumeRendering.uniformLocation("iResolution");
     Q_ASSERT(m_uniformLocationVolumeRendering_iResolution != -1);
 
+    m_uniformLocationVolumeRenderingTexture = m_shaderProgramVolumeRendering.uniformLocation("textureSampler");
+    Q_ASSERT(m_uniformLocationVolumeRenderingTexture != -1);
+
     m_shaderProgramVolumeRendering.bind();
 
     qDebug() << "m_shaderProgramVolumeRendering initialized.";
+}
+
+void Visualization::opengl_createShaderProgramVolumeRenderingLighting()
+{
+    m_shaderProgramVolumeRenderingLighting.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/volume_rendering.vert");
+    m_shaderProgramVolumeRenderingLighting.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_rendering_lighting.frag");
+    m_shaderProgramVolumeRenderingLighting.link();
+
+    m_uniformLocationVolumeRendering_iTimeLighting = m_shaderProgramVolumeRenderingLighting.uniformLocation("iTime");
+    Q_ASSERT(m_uniformLocationVolumeRendering_iTimeLighting != -1);
+
+    m_uniformLocationVolumeRendering_iResolutionLighting = m_shaderProgramVolumeRenderingLighting.uniformLocation("iResolution");
+    Q_ASSERT(m_uniformLocationVolumeRendering_iResolutionLighting != -1);
+
+    /*
+    m_uniformLocationVolumeRenderingTextureLighting = m_shaderProgramVolumeRenderingLighting.uniformLocation("textureSampler");
+    Q_ASSERT(m_uniformLocationVolumeRenderingTextureLighting != -1);
+    */
+
+    m_shaderProgramVolumeRenderingLighting.bind();
+
+    qDebug() << "m_shaderProgramVolumeRenderingLighting initialized.";
 }
 
 void Visualization::opengl_loadVectorDataTexture(std::vector<Color> const &colorMap)
@@ -877,7 +910,6 @@ void Visualization::opengl_drawIsolines()
                      isolineVertices.data(),
                      GL_DYNAMIC_DRAW);
 
-
         glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(isolineVertices.size()));
     }
 }
@@ -1063,15 +1095,168 @@ void Visualization::opengl_drawLic()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
+void Visualization::opengl_updateTexture()
+{
+    switch (m_volumeRenderTexture)
+    {
+    case VolumeRenderTexture::DataRaw:
+        opengl_updateTextureSyntheticCube();
+        break;
+    case VolumeRenderTexture::SyntheticCube:
+        opengl_updateTextureSyntheticScene();
+        break;
+    case VolumeRenderTexture::SyntheticScene:
+        opengl_updateTextureLoadDataRawFromFile();
+        break;
+    }
+}
+
+void Visualization::opengl_updateTextureSyntheticCube()
+{
+    // Generate synthetic 3D volume data
+    auto const ABCvolume = [](QVector3D texCoord)
+    {
+        QVector3D const center1 = QVector3D(0.25F, 0.25F, 0.25F);
+        QVector3D const center2 = QVector3D(0.75F, 0.75F, 0.75F);
+
+        float const dist1 = (texCoord - center1).length();
+        float const dist2 = (texCoord - center2).length();
+
+        float const intensity1 = 0.35F * (std::sin(14.0F * dist1) + 1.0F);
+        float const intensity2 = 0.25F * (std::sin(16.0F * dist2) + 1.0F);
+
+        return intensity1 + intensity2;
+    };
+
+    std::vector<float> textureData;
+    size_t const size = 64U;
+    size_t const sizeFloat = static_cast<float>(size);
+    textureData.reserve(size * size * size);
+    for (size_t w = 0U; w < size; ++w)
+    {
+        for (size_t v = 0U; v < size; ++v)
+        {
+            for (size_t u = 0U; u < size; ++u)
+            {
+                float const uNormalized = (1.0F / sizeFloat) * static_cast<float>(u);
+                float const vNormalized = (1.0F / sizeFloat) * static_cast<float>(v);
+                float const wNormalized = (1.0F / sizeFloat) * static_cast<float>(w);
+                textureData.push_back(ABCvolume({uNormalized, vNormalized, wNormalized}));
+            }
+        }
+    }
+
+    // Set parameters and upload 3D texture data
+    glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glTexImage3D(GL_TEXTURE_3D,
+                 0,
+                 GL_RED,
+                 size,
+                 size,
+                 size,
+                 0,
+                 GL_RED,
+                 GL_FLOAT,
+                 textureData.data());
+}
+
+void Visualization::opengl_updateTextureSyntheticScene()
+{
+    qDebug() << "Not implemented";
+}
+
+void Visualization::opengl_loadDataRawFromFile()
+{
+    qDebug() << "Reading .dat file:" << m_datFilePath.c_str();
+
+    using reader = datraw::raw_reader<char>;
+    auto r = reader::open(m_datFilePath);
+
+    m_datRawInfo = r.info();
+    qDebug() << "Components:" << m_datRawInfo.components();
+    qDebug() << "Resolution:" << m_datRawInfo.resolution();
+    qDebug() << "Dimensions:" << m_datRawInfo.dimensions();
+
+    QDebug debugFormat = qDebug();
+    debugFormat << "Format:";
+    switch (m_datRawInfo.format())
+    {
+    case datraw::scalar_type::uint8:
+        debugFormat << "uint8";
+        break;
+
+    case datraw::scalar_type::uint16:
+        debugFormat << "uint16";
+        break;
+
+    default:
+        debugFormat << "other";
+        break;
+    }
+
+    while (r)
+    {
+        m_volumeRenderTextureData.resize(r.read_current(nullptr, 0));
+        r.read_current(m_volumeRenderTextureData.data(), m_volumeRenderTextureData.size());
+        r.move_next();
+    }
+}
+
+// Assumes m_volumeRenderTextureData and m_datRawInfo have been initialized
+void Visualization::opengl_updateTextureLoadDataRawFromFile()
+{
+    // Set texture parameters and upload 3D texture data
+    glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glTexImage3D(GL_TEXTURE_3D,
+                 0,
+                 GL_RED,
+                 m_datRawInfo.resolution()[0],
+                 m_datRawInfo.resolution()[1],
+                 m_datRawInfo.resolution()[2],
+                 0,
+                 GL_RED,
+                 GL_UNSIGNED_SHORT,
+                 m_volumeRenderTextureData.data());
+}
+
+
 void Visualization::opengl_drawVolumeRendering()
 {
-    m_shaderProgramVolumeRendering.bind();
     std::array<float, 3U> const iResolution{static_cast<float>(width()),
                                             static_cast<float>(height()),
                                             static_cast<float>(screen()->devicePixelRatio())};
 
-    glUniform3fv(m_uniformLocationVolumeRendering_iResolution, 1, iResolution.data());
-    glUniform1f(m_uniformLocationVolumeRendering_iTime, m_elapsedTimer.elapsed() / 1000.0F);
+    switch (m_volumeRenderFragShader)
+    {
+    case VolumeRenderFragShader::VolumeRenderer:
+        m_shaderProgramVolumeRendering.bind();
+        glUniform3fv(m_uniformLocationVolumeRendering_iResolution, 1, iResolution.data());
+        glUniform1f(m_uniformLocationVolumeRendering_iTime, m_elapsedTimer.elapsed() / 1000.0F);
+        break;
+
+    case VolumeRenderFragShader::VolumetricLighting:
+        m_shaderProgramVolumeRenderingLighting.bind();
+        glUniform3fv(m_uniformLocationVolumeRendering_iResolutionLighting, 1, iResolution.data());
+        glUniform1f(m_uniformLocationVolumeRendering_iTimeLighting, m_elapsedTimer.elapsed() / 1000.0F);
+        break;
+    }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
     glBindVertexArray(m_vaoVolumeRendering);
     glDrawElements(GL_TRIANGLES,

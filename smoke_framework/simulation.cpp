@@ -220,11 +220,6 @@ void Simulation::do_one_simulation_step()
     diffuse_matter();
 }
 
-void Simulation::loadData(std::vector<float> &scalarValues) const
-{
-    qDebug() << "Loading data not implemented";
-}
-
 // Getters
 
 // Unfortunately, copying is necessary to consistently export std::vector<float> vectors,

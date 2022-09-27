@@ -27,7 +27,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>8</number>
       </property>
       <widget class="QWidget" name="SimulationSettingsPage">
        <property name="autoFillBackground">
@@ -294,6 +294,39 @@
           <property name="text">
            <string>Load data</string>
           </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="VisualizationPage">
+       <attribute name="title">
+        <string>Visualization</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <item>
+         <widget class="QGroupBox" name="visualizationProjectionGroupBox">
+          <property name="title">
+           <string>Projection</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QRadioButton" name="visualizationProjectionOrthographicRadioButton">
+             <property name="text">
+              <string>Orthographic</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="visualizationProjectionPerspectiveRadioButton">
+             <property name="text">
+              <string>Perspective</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -1091,7 +1124,7 @@
            <item row="0" column="0">
             <widget class="QComboBox" name="vectorDataGlyphComboBox">
              <property name="currentIndex">
-              <number>0</number>
+              <number>3</number>
              </property>
              <item>
               <property name="text">
@@ -1741,6 +1774,129 @@
           <property name="text">
            <string>Draw volume rendering</string>
           </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="volumeRenderingFragmentShaderSelectionGroupBox">
+          <property name="title">
+           <string>Fragment shader selection</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_18">
+           <item>
+            <widget class="QRadioButton" name="volumeRenderingFragmentShaderSelectionVolumenRenderingRadioButton">
+             <property name="text">
+              <string>Volume renderer</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="volumeRenderingFragmentShaderSelectionVolumetricLightingRadioButton">
+             <property name="text">
+              <string>Volumetric lighting</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="volumeRenderingGroupBox">
+          <property name="title">
+           <string>Data selection for &quot;Volume renderer&quot; fragment shader</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="volumeRenderingSyntheticCubeRadioButton">
+             <property name="text">
+              <string>Synthetic cube</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="volumeRenderingSyntheticSceneRadioButton">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Synthetic scene</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="volumeRenderingDataRawRadioButton">
+             <property name="text">
+              <string>Data raw</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="volumeRenderingSelectDatFilePushButton">
+             <property name="text">
+              <string>Select .dat file</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QLabel" name="volumeRenderingDataRawInfoLabel">
+             <property name="text">
+              <string>No .dat file selected</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="timeStepVolumeRenderingGroupBox">
+          <property name="title">
+           <string>Time step</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_17">
+           <item>
+            <widget class="QSpinBox" name="timeStepVolumeRenderingGroupBoxSpinBox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>9</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="timeStepVolumeRenderingGroupBoxHorizontalSlider">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>9</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -1868,7 +2024,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>37</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
@@ -1908,6 +2064,86 @@
  <resources/>
  <connections>
   <connection>
+   <sender>scalarDataColorMapNumberOfColorsSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>scalarDataColorMapNumberOfColorsSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>364</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>495</x>
+     <y>368</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scalarDataColorMapNumberOfColorsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>scalarDataColorMapNumberOfColorsSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>495</x>
+     <y>368</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>364</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfColorsSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfColorsSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>735</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>547</x>
+     <y>725</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfColorsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfColorsSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>547</x>
+     <y>725</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>735</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>isolinesNumberOfIsolinesSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>isolinesNumberOfIsolinesSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>92</x>
+     <y>591</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>559</x>
+     <y>597</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>isolinesNumberOfIsolinesSpinBox</sender>
    <signal>valueChanged(int)</signal>
    <receiver>isolinesNumberOfIsolinesSlider</receiver>
@@ -1915,11 +2151,75 @@
    <hints>
     <hint type="sourcelabel">
      <x>559</x>
-     <y>536</y>
+     <y>597</y>
     </hint>
     <hint type="destinationlabel">
-     <x>69</x>
-     <y>531</y>
+     <x>92</x>
+     <y>591</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>gridpointsSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>gridpointsSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>559</x>
+     <y>581</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>337</x>
+     <y>575</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfGlyphsHorizontalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfGlyphsHorizontalSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>203</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>559</x>
+     <y>208</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfGlyphsHorizontalSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfGlyphsHorizontalSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>559</x>
+     <y>208</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>203</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>vectorDataNumberOfGlyphsVerticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>vectorDataNumberOfGlyphsVerticalSpinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>205</x>
+     <y>275</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>559</x>
+     <y>280</y>
     </hint>
    </hints>
   </connection>
@@ -1946,124 +2246,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>98</x>
-     <y>227</y>
+     <x>109</x>
+     <y>187</y>
     </hint>
     <hint type="destinationlabel">
-     <x>112</x>
-     <y>317</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfGlyphsVerticalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfGlyphsVerticalSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>205</x>
-     <y>275</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>559</x>
-     <y>280</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>gridpointsSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>gridpointsSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>559</x>
-     <y>613</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>314</x>
-     <y>608</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>showMinMaxDataCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>vectorDataMinLcdNumber</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>258</x>
-     <y>129</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>719</x>
-     <y>746</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfGlyphsHorizontalSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfGlyphsHorizontalSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>559</x>
-     <y>208</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>203</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfColorsSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfColorsSlider</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>547</x>
-     <y>725</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>92</x>
-     <y>720</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>gridpointsSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>gridpointsSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>228</x>
-     <y>608</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>559</x>
-     <y>613</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>scalarDataSlicingSliceIndexHorizontalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>scalarDataSlicingSliceIndexSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>313</x>
-     <y>720</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>452</x>
-     <y>727</y>
+     <x>135</x>
+     <y>256</y>
     </hint>
    </hints>
   </connection>
@@ -2084,50 +2272,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>scalarDataColorMapNumberOfColorsSpinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>scalarDataColorMapNumberOfColorsSlider</receiver>
-   <slot>setValue(int)</slot>
+   <sender>showMinMaxDataCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>scalarDataMaxLcdNumber</receiver>
+   <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>495</x>
-     <y>368</y>
+     <x>258</x>
+     <y>129</y>
     </hint>
     <hint type="destinationlabel">
-     <x>157</x>
-     <y>364</y>
+     <x>1188</x>
+     <y>697</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>scalarDataColorMapNumberOfColorsSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>scalarDataColorMapNumberOfColorsSpinBox</receiver>
-   <slot>setValue(int)</slot>
+   <sender>showMinMaxDataCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>vectorDataMinLcdNumber</receiver>
+   <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>157</x>
-     <y>364</y>
+     <x>258</x>
+     <y>129</y>
     </hint>
     <hint type="destinationlabel">
-     <x>495</x>
-     <y>368</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>vectorDataNumberOfColorsSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfColorsSpinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>92</x>
-     <y>720</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>547</x>
-     <y>725</y>
+     <x>719</x>
+     <y>746</y>
     </hint>
    </hints>
   </connection>
@@ -2148,50 +2320,66 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>scalarDataMaxLcdNumber</receiver>
-   <slot>setVisible(bool)</slot>
+   <sender>gridpointsSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>gridpointsSpinBox</receiver>
+   <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>258</x>
-     <y>129</y>
+     <x>251</x>
+     <y>575</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1188</x>
-     <y>697</y>
+     <x>559</x>
+     <y>581</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>vectorDataNumberOfGlyphsHorizontalSlider</sender>
+   <sender>scalarDataSlicingSliceIndexHorizontalSlider</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>vectorDataNumberOfGlyphsHorizontalSpinBox</receiver>
+   <receiver>scalarDataSlicingSliceIndexSpinBox</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>199</x>
-     <y>203</y>
+     <x>313</x>
+     <y>720</y>
     </hint>
     <hint type="destinationlabel">
-     <x>559</x>
-     <y>208</y>
+     <x>452</x>
+     <y>727</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>isolinesNumberOfIsolinesSlider</sender>
+   <sender>timeStepVolumeRenderingGroupBoxHorizontalSlider</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>isolinesNumberOfIsolinesSpinBox</receiver>
+   <receiver>timeStepVolumeRenderingGroupBoxSpinBox</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>69</x>
-     <y>531</y>
+     <x>152</x>
+     <y>565</y>
     </hint>
     <hint type="destinationlabel">
-     <x>559</x>
-     <y>536</y>
+     <x>195</x>
+     <y>357</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>timeStepVolumeRenderingGroupBoxSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>timeStepVolumeRenderingGroupBoxHorizontalSlider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>243</x>
+     <y>353</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>275</x>
+     <y>560</y>
     </hint>
    </hints>
   </connection>

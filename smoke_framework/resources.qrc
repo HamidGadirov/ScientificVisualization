@@ -15,6 +15,7 @@
         <file>shaders/lic.vert</file>
         <file>shaders/lic.frag</file>
         <file>shaders/volume_rendering.vert</file>
-        <file>shaders/volume_rendering2.frag</file>
+        <file>shaders/volume_rendering.frag</file>
+        <file>shaders/volume_rendering_lighting.frag</file>
     </qresource>
 </RCC>
