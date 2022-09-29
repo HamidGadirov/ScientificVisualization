@@ -354,10 +354,16 @@ void Visualization::opengl_setupLic()
 // Render a window-sized quad.
 void Visualization::opengl_setupVolumeRendering()
 {
-    std::array<QVector2D, 4U> const vertices{QVector2D{-1.0F,  1.0F},  // Top left.
-                                             QVector2D{-1.0F, -1.0F},  // Bottom left.
-                                             QVector2D{ 1.0F,  1.0F},  // Top right.
-                                             QVector2D{ 1.0F, -1.0F}}; // Bottom right.
+    struct Vertex
+    {
+        QVector2D coordinate;
+        QVector2D uv;
+    };
+
+    std::array<Vertex, 4U> const vertices{{{QVector2D{-1.0F,  1.0F}, QVector2D{0.0F, 1.0F}},  // Top left.
+                                           {QVector2D{-1.0F, -1.0F}, QVector2D{0.0, 0.0F}}, // Bottom left.
+                                           {QVector2D{ 1.0F,  1.0F}, QVector2D{1.0F, 1.0F}},  // Top right.
+                                           {QVector2D{ 1.0F, -1.0F}, QVector2D{1.0F, 0.0F}}}}; // Bottom right.
     std::array<unsigned short, 6U> const indices{0U, 1U, 2U,
                                                  1U, 3U, 2U};
 
@@ -366,9 +372,15 @@ void Visualization::opengl_setupVolumeRendering()
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vboVolumeRendering);
     glBufferData(GL_ARRAY_BUFFER,
-                 static_cast<GLsizeiptr>(vertices.size() * sizeof(QVector2D)),
+                 static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex)),
                  vertices.data(),
                  GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(0));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(2U * sizeof(GLfloat)));
 
     // Buffer indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboVolumeRendering);
@@ -377,13 +389,9 @@ void Visualization::opengl_setupVolumeRendering()
                  indices.data(),
                  GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D), reinterpret_cast<GLvoid*>(0));
-
     // Load synthetic cube data by default
     opengl_updateTextureSyntheticCube();
 }
-
 void Visualization::opengl_createShaderProgramScalarDataScaleTexture()
 {
     m_shaderProgramScalarDataScaleTexture.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/scalarData_scale.vert");
@@ -1236,21 +1244,20 @@ void Visualization::opengl_updateTextureLoadDataRawFromFile()
 
 void Visualization::opengl_drawVolumeRendering()
 {
-    std::array<float, 3U> const iResolution{static_cast<float>(width()),
-                                            static_cast<float>(height()),
-                                            static_cast<float>(screen()->devicePixelRatio())};
+    std::array<float, 2U> const iResolution{static_cast<float>(width()),
+                                            static_cast<float>(height())};
 
     switch (m_volumeRenderFragShader)
     {
     case VolumeRenderFragShader::VolumeRenderer:
         m_shaderProgramVolumeRendering.bind();
-        glUniform3fv(m_uniformLocationVolumeRendering_iResolution, 1, iResolution.data());
+        glUniform2fv(m_uniformLocationVolumeRendering_iResolution, 1, iResolution.data());
         glUniform1f(m_uniformLocationVolumeRendering_iTime, m_elapsedTimer.elapsed() / 1000.0F);
         break;
 
     case VolumeRenderFragShader::VolumetricLighting:
         m_shaderProgramVolumeRenderingLighting.bind();
-        glUniform3fv(m_uniformLocationVolumeRendering_iResolutionLighting, 1, iResolution.data());
+        glUniform2fv(m_uniformLocationVolumeRendering_iResolutionLighting, 1, iResolution.data());
         glUniform1f(m_uniformLocationVolumeRendering_iTimeLighting, m_elapsedTimer.elapsed() / 1000.0F);
         break;
     }

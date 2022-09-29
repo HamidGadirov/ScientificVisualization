@@ -7,7 +7,9 @@
 //#define USE_CENTRAL
 #define USE_INTERMEDIATE
 
-uniform vec3 iResolution;
+in vec2 uv;
+
+uniform vec2 iResolution;
 uniform float iTime;
 
 out vec4 color;
@@ -209,11 +211,9 @@ vec4 lighting(vec4 diffuseColor, vec3 normal, vec3 eyeDir)
  *  Computes the color for the given fragment.
  *
  *	@param fragColor OUT: The color of the pixel / fragment.
- *	@param fragCoord The coordinate of the fragment in screen space
  */
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+void mainImage(out vec4 fragColor)
 {
-    vec2 uv = fragCoord.xy / iResolution.xy;
     float aspect = iResolution.x / iResolution.y;
 
     /******************** compute camera parameters ********************/
@@ -227,7 +227,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     camUp = normalize(cross(camRight, camDir));
 
     /************ compute ray direction (OpenGL style) *****************/
-    vec2 myUV = 2.0 * uv - 1.0;
     float fovx = 2.0 * atan(tan(fovy / 2.0) * aspect);
 
     vec3 uL = (tan(fovx*0.5)*zNear) * (-camRight) + (tan(fovy*0.5) * zNear) * camUp + camDir * zNear + camPos;
@@ -295,5 +294,5 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
 void main()
 {
-    mainImage(color, gl_FragCoord.xy);
+    mainImage(color);
 }
