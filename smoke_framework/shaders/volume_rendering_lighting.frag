@@ -32,7 +32,7 @@ const float fovy = 45.0;
 const float zNear = 0.1;
 
 // light direction
-const vec3 lightDir = vec3(1.0, -1.0, -1.0);
+const vec3 lightDir = vec3(1.0, 1.0, 1.0);
 
 const vec4 lightColor = vec4(1);
 const vec4 specularColor = vec4(1);
@@ -244,7 +244,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     /******************* test against bounding box ********************/
     float tNear, tFar;
     bool hit = intersectBoundingBox(camPos, rayDir, tNear, tFar);
-       vec4 background = vec4(1.0);
+    // vec4 background = vec4(1.0);
+    vec4 background = vec4(0.0F, 0.0F, 0.0F, 1.0F);
     if(tNear < 0.0)
         tNear = 0.0;
 
