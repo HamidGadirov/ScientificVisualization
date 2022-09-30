@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QFileDialog>>
+#include <QFileDialog>
 
 #include <string>
 
@@ -9,6 +9,9 @@ void MainWindow::on_drawVolumeRenderingCheckBox_toggled(bool checked)
 {
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_drawVolumeRendering = checked;
+
+    // Pause the smoke simulation while volume rendering
+    visualizationPtr->m_isRunning = !checked;
 }
 
 void MainWindow::on_volumeRenderingFragmentShaderSelectionVolumenRenderingRadioButton_clicked()
