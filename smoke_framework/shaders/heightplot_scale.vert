@@ -21,7 +21,7 @@ uniform mat4 projectionTransform;
 uniform mat4 viewTransform;
 uniform mat3 normalTransform;
 
-uniform vec4 material;
+uniform vec4 material; // Contains 4 floats, in order: k_a, k_d, k_s, alpha.
 uniform vec3 lightPosition;
 
 void main()

@@ -12,7 +12,6 @@ using namespace std::placeholders;
 
 class Isoline
 {
-
 public:
     enum class AmbiguousCaseDecider
     {

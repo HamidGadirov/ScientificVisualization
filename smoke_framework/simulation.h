@@ -40,10 +40,6 @@ class Simulation
     void diffuse_matter();
     void set_forces();
     
-    // Load data
-    bool m_loadData = false;
-    void loadData(std::vector<float> &scalarValues) const;
-
 public:
     // Functions
     Simulation(size_t const DIM);
