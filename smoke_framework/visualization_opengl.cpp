@@ -1,4 +1,3 @@
-#include "qscreen.h"
 #include "visualization.h"
 
 #include "mainwindow.h"
@@ -724,7 +723,7 @@ void Visualization::opengl_updateLicPoints()
     glBindBuffer(GL_ARRAY_BUFFER, m_vboLic);
     glBufferSubData(GL_ARRAY_BUFFER,
                     0,
-                    static_cast<GLsizeiptr>(licCoordsAndTexCoords.size() *sizeof(QVector2D)),
+                    static_cast<GLsizeiptr>(licCoordsAndTexCoords.size() * sizeof(QVector2D)),
                     licCoordsAndTexCoords.data());
 }
 
@@ -1157,9 +1156,9 @@ void Visualization::opengl_updateTextureSyntheticCube()
     // Set parameters and upload 3D texture data
     glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -1223,9 +1222,9 @@ void Visualization::opengl_updateTextureLoadDataRawFromFile()
     // Set texture parameters and upload 3D texture data
     glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
