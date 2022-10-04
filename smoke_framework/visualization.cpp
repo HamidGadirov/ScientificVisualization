@@ -446,14 +446,15 @@ static QVector4D transferFunction(float value)
     // Define colors for the colormap
     QVector3D const colorNode0{0.0F, 0.0F, 1.0F};  // blue
     QVector3D const colorNode1{1.0F, 1.0F, 1.0F};  // white
+    // QVector3D const colorNode1{0.0F, 1.0F, 0.0F}; // green
     QVector3D const colorNode2{1.0F, 0.0F, 0.0F};  // red
 
     value /= 255.0F; // to range [0...1]
 
-    float alpha = value * 0.1F; // value;
+    float alpha = value;// * 0.1F; // value;
 
     if (value < 0.2F)
-        alpha = 0.0F;
+        alpha = 0.5F;
 
     QVector3D color0 = colorNode0;
     QVector3D color1 = colorNode1;

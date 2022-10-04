@@ -29,7 +29,7 @@ const float ks = 0.7;  // specular contribution
 const float exponent = 50.0;  // specular exponent (shininess)
 
 // Number of maximum raycasting samples per ray
-const int sampleNum = 150;
+const int sampleNum = 100;
 
 // Width of one voxel
 const float voxelWidth = 1.0 / 64.0;
@@ -44,6 +44,7 @@ const float sig = 0.4;
 // Colors for the colormap
 const vec3 colorNode0 = vec3(0, 0, 1);  // blue
 const vec3 colorNode1 = vec3(1, 1, 1);  // white
+// const vec3 colorNode1 = vec3(0, 1, 0); // green
 const vec3 colorNode2 = vec3(1, 0, 0);  // red
 
 vec2 csqr(vec2 a)
@@ -70,9 +71,9 @@ float sampleVolume(vec3 texCoord)
  */
 vec4 transferFunction(float value)
 {
-    float alpha = value * 0.1; // value;
+    float alpha = value;
     if (value < 0.2)
-        alpha = 0.0;
+        alpha = 0.5;
 
     float t = 0.0;
     vec3 color0 = colorNode0;
