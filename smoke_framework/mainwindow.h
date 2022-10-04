@@ -24,7 +24,7 @@ public:
 
 private slots:
     // Simulation, show minimum/maximum values of scalar and vector data.
-    void on_showMinMaxDataCheckBox_toggled(bool checked);
+    void on_simulationShowMinMaxDataCheckBox_toggled(bool checked);
 
     // Simulation, density injected fluid.
     void on_densitySlider_valueChanged(int value);

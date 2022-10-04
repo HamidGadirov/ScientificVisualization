@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-void MainWindow::on_showMinMaxDataCheckBox_toggled(bool checked)
+void MainWindow::on_simulationShowMinMaxDataCheckBox_toggled(bool checked)
 {
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_sendMinMaxToUI = checked;
