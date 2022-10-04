@@ -2,6 +2,7 @@
 
 #include "mainwindow.h"
 
+#include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
 
@@ -40,6 +41,7 @@ void Visualization::opengl_generateObjects()
     glGenBuffers(1, &m_vboVolumeRendering);
     glGenBuffers(1, &m_eboVolumeRendering);
     glGenTextures(1, &m_volumeRenderingTextureLocation);
+    glGenTextures(1, &m_volumeRenderingTextureLocationPreIntegrationLookupTable);
 }
 
 void Visualization::opengl_createShaderPrograms()
@@ -55,6 +57,7 @@ void Visualization::opengl_createShaderPrograms()
     opengl_createShaderProgramLic();
     opengl_createShaderProgramVolumeRendering();
     opengl_createShaderProgramVolumeRenderingLighting();
+    opengl_createShaderProgramVolumeRenderingPreIntegration();
 }
 
 void Visualization::opengl_setupAllBuffers()
@@ -101,6 +104,7 @@ void Visualization::opengl_deleteObjects()
     glDeleteBuffers(1, &m_vboVolumeRendering);
     glDeleteBuffers(1, &m_eboVolumeRendering);
     glDeleteTextures(1, &m_volumeRenderingTextureLocation);
+    glDeleteTextures(1, &m_volumeRenderingTextureLocationPreIntegrationLookupTable);
 }
 
 void Visualization::opengl_loadScalarDataTexture(std::vector<Color> const &colorMap)
@@ -390,7 +394,10 @@ void Visualization::opengl_setupVolumeRendering()
 
     // Load synthetic cube data by default
     opengl_updateTextureSyntheticCube();
+
+    opengl_updatePreIntegrationLookupTable();
 }
+
 void Visualization::opengl_createShaderProgramScalarDataScaleTexture()
 {
     m_shaderProgramScalarDataScaleTexture.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/scalarData_scale.vert");
@@ -624,6 +631,29 @@ void Visualization::opengl_createShaderProgramVolumeRenderingLighting()
     m_shaderProgramVolumeRenderingLighting.bind();
 
     qDebug() << "m_shaderProgramVolumeRenderingLighting initialized.";
+}
+
+void Visualization::opengl_createShaderProgramVolumeRenderingPreIntegration()
+{
+    m_shaderProgramVolumeRenderingPreIntegration.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/volume_rendering.vert");
+    m_shaderProgramVolumeRenderingPreIntegration.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_rendering_preintegration.frag");
+    m_shaderProgramVolumeRenderingPreIntegration.link();
+
+    m_uniformLocationVolumeRenderingPreIntegration_iTime = m_shaderProgramVolumeRenderingPreIntegration.uniformLocation("iTime");
+    Q_ASSERT(m_uniformLocationVolumeRenderingPreIntegration_iTime != -1);
+
+    m_uniformLocationVolumeRenderingPreIntegration_iResolution = m_shaderProgramVolumeRenderingPreIntegration.uniformLocation("iResolution");
+    Q_ASSERT(m_uniformLocationVolumeRenderingPreIntegration_iResolution != -1);
+
+    m_uniformLocationVolumeRenderingPreIntegrationTexture = m_shaderProgramVolumeRenderingPreIntegration.uniformLocation("textureSampler");
+    Q_ASSERT(m_uniformLocationVolumeRenderingPreIntegrationTexture != -1);
+
+    m_uniformLocationVolumeRenderingPreIntegrationTextureLookupTable = m_shaderProgramVolumeRenderingPreIntegration.uniformLocation("lookupTable");
+    Q_ASSERT(m_uniformLocationVolumeRenderingPreIntegrationTextureLookupTable != -1);
+
+    m_shaderProgramVolumeRenderingPreIntegration.bind();
+
+    qDebug() << "m_shaderProgramVolumeRenderingPreIntegration initialized.";
 }
 
 void Visualization::opengl_loadVectorDataTexture(std::vector<Color> const &colorMap)
@@ -1118,6 +1148,32 @@ void Visualization::opengl_updateTexture()
     }
 }
 
+void Visualization::opengl_updatePreIntegrationLookupTable()
+{
+    size_t const DIM = 32U; //256U; //64U;
+
+    std::vector<QVector4D> const lookupTable = computePreIntegrationLookupTable(DIM);
+
+    // Set parameters and upload 2D texture data
+//    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_volumeRenderingTextureLocationPreIntegrationLookupTable);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 DIM,
+                 DIM,
+                 0,
+                 GL_RGBA,
+                 GL_FLOAT,
+                 lookupTable.data());
+}
+
 void Visualization::opengl_updateTextureSyntheticCube()
 {
     // Generate synthetic 3D volume data
@@ -1154,6 +1210,7 @@ void Visualization::opengl_updateTextureSyntheticCube()
     }
 
     // Set parameters and upload 3D texture data
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1246,23 +1303,43 @@ void Visualization::opengl_drawVolumeRendering()
     std::array<float, 2U> const iResolution{static_cast<float>(width()),
                                             static_cast<float>(height())};
 
+    // If the visualization is *not* paused, then we use the current amount of elapsed time.
+    // Otherwise, this step is skipped and we use the time stamp value that was last set.
+    if (!m_volumeRenderingTimeIsPaused)
+        m_volumeRenderingPauseTimestamp = m_elapsedTimer.elapsed() / 1000.0F;
+
     switch (m_volumeRenderFragShader)
     {
     case VolumeRenderFragShader::VolumeRenderer:
         m_shaderProgramVolumeRendering.bind();
         glUniform2fv(m_uniformLocationVolumeRendering_iResolution, 1, iResolution.data());
-        glUniform1f(m_uniformLocationVolumeRendering_iTime, m_elapsedTimer.elapsed() / 1000.0F);
+        glUniform1f(m_uniformLocationVolumeRendering_iTime, m_volumeRenderingPauseTimestamp);
+
+        glUniform1i(m_uniformLocationVolumeRenderingPreIntegrationTexture, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
         break;
 
     case VolumeRenderFragShader::VolumetricLighting:
         m_shaderProgramVolumeRenderingLighting.bind();
         glUniform2fv(m_uniformLocationVolumeRendering_iResolutionLighting, 1, iResolution.data());
-        glUniform1f(m_uniformLocationVolumeRendering_iTimeLighting, m_elapsedTimer.elapsed() / 1000.0F);
+        glUniform1f(m_uniformLocationVolumeRendering_iTimeLighting, m_volumeRenderingPauseTimestamp);
+        break;
+
+    case VolumeRenderFragShader::VolumeRendererPreIntegration:
+        m_shaderProgramVolumeRenderingPreIntegration.bind();
+        glUniform2fv(m_uniformLocationVolumeRenderingPreIntegration_iResolution, 1, iResolution.data());
+        glUniform1f(m_uniformLocationVolumeRenderingPreIntegration_iTime, m_volumeRenderingPauseTimestamp);
+
+        glUniform1i(m_uniformLocationVolumeRenderingPreIntegrationTexture, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
+
+        glUniform1i(m_uniformLocationVolumeRenderingPreIntegrationTextureLookupTable, 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_volumeRenderingTextureLocationPreIntegrationLookupTable);
         break;
     }
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
     glBindVertexArray(m_vaoVolumeRendering);
     glDrawElements(GL_TRIANGLES,

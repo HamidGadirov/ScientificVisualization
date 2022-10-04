@@ -212,7 +212,6 @@ void Simulation::set_forces()
 //      - solve:            read forces from the user
 //      - diffuse_matter:   compute a new set of velocities
 //      - gluPostRedisplay: draw a new visualization frame
-
 void Simulation::do_one_simulation_step()
 {
     set_forces();
@@ -220,13 +219,11 @@ void Simulation::do_one_simulation_step()
     diffuse_matter();
 }
 
-// Getters
 
-// Unfortunately, copying is necessary to consistently export std::vector<float> vectors,
-// without the custom allocator.
+// Getters
 std::vector<float> Simulation::density() const
 {
-    return std::vector<float>{m_rho.cbegin(), m_rho.cend()};
+    return m_rho;
 }
 
 std::vector<float> Simulation::densityInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const
@@ -244,6 +241,7 @@ std::vector<float> Simulation::velocityYInterpolated(size_t const numberOfRows, 
     return interpolation::interpolateSquareVector(m_vy, m_DIM, numberOfRows, numberOfColumns);
 }
 
+// TODO: If the velocity magnitude is already calculated, this does redundant work.
 std::vector<float> Simulation::velocityMagnitudeInterpolated(size_t const numberOfRows, size_t const numberOfColums) const
 {
     return interpolation::interpolateSquareVector(velocityMagnitude(), m_DIM, numberOfRows, numberOfColums);
@@ -259,6 +257,7 @@ std::vector<float> Simulation::forceFieldYInterpolated(size_t const numberOfRows
     return interpolation::interpolateSquareVector(m_fy, m_DIM, numberOfRows, numberOfColumns);
 }
 
+// TODO: If the force field magnitude is already calculated, this does redundant work.
 std::vector<float> Simulation::forceFieldMagnitudeInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const
 {
     return interpolation::interpolateSquareVector(forceFieldMagnitude(), m_DIM, numberOfRows, numberOfColumns);

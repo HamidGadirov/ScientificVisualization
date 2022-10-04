@@ -26,6 +26,12 @@ void MainWindow::on_volumeRenderingFragmentShaderSelectionVolumetricLightingRadi
     visualizationPtr->m_volumeRenderFragShader = Visualization::VolumeRenderFragShader::VolumetricLighting;
 }
 
+void MainWindow::on_volumeRenderingFragmentShaderSelectionVolumeRenderingPreIntegrationRadioButton_clicked()
+{
+    auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
+    visualizationPtr->m_volumeRenderFragShader = Visualization::VolumeRenderFragShader::VolumeRendererPreIntegration;
+}
+
 void MainWindow::on_timeStepVolumeRenderingGroupBoxSpinBox_valueChanged(int arg1)
 {
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
@@ -82,4 +88,10 @@ void MainWindow::on_volumeRenderingSelectDatFilePushButton_clicked()
         visualizationPtr->opengl_loadDataRawFromFile();
         ui->volumeRenderingDataRawRadioButton->click();
     }
+}
+
+void MainWindow::on_volumeRenderingPausePlayPushButton_clicked()
+{
+    auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
+    visualizationPtr->m_volumeRenderingTimeIsPaused = !visualizationPtr->m_volumeRenderingTimeIsPaused;
 }

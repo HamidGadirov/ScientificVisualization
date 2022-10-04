@@ -39,7 +39,7 @@ class Simulation
     void solve();
     void diffuse_matter();
     void set_forces();
-    
+
 public:
     // Functions
     Simulation(size_t const DIM);

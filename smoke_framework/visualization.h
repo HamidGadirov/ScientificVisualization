@@ -57,7 +57,8 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     enum class VolumeRenderFragShader
     {
         VolumeRenderer,
-        VolumetricLighting
+        VolumetricLighting,
+        VolumeRendererPreIntegration
     };
 
     QTimer m_timer; // For triggering simulation updates and render events.
@@ -73,6 +74,9 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     bool m_drawHeightplot = false;      // Draw height plot or not.
     bool m_drawLIC = false;             // Draw LIC or not.
     bool m_drawVolumeRendering = false; // Draw 3D volume rendering or not.
+
+    bool m_volumeRenderingTimeIsPaused = false; // Pause 3D volume rendering
+    float m_volumeRenderingPauseTimestamp = 0.0F;
 
     size_t m_DIM = 64U;             // Size of simulation grid. Must be even.
 
@@ -139,6 +143,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     std::vector<float> forceFieldDivergence() const;
 
     std::vector<QVector3D> computeNormals(std::vector<float> height) const;
+    std::vector<QVector4D> computePreIntegrationLookupTable(size_t const DIM) const;
 
     void input_drag(int const mx, int my);
 
@@ -173,6 +178,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLuint m_vboVolumeRendering;
     GLuint m_eboVolumeRendering;
     GLuint m_volumeRenderingTextureLocation;
+    GLuint m_volumeRenderingTextureLocationPreIntegrationLookupTable;
 
     QOpenGLShaderProgram m_shaderProgramScalarDataScaleTexture;
     QOpenGLShaderProgram m_shaderProgramScalarDataScaleCustomColorMap;
@@ -185,6 +191,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     QOpenGLShaderProgram m_shaderProgramLic;
     QOpenGLShaderProgram m_shaderProgramVolumeRendering;
     QOpenGLShaderProgram m_shaderProgramVolumeRenderingLighting;
+    QOpenGLShaderProgram m_shaderProgramVolumeRenderingPreIntegration;
 
     GLint m_uniformLocationScalarDataScaleTexture_rangeMin;
     GLint m_uniformLocationScalarDataScaleTexture_rangeMax;
@@ -247,6 +254,11 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLint m_uniformLocationVolumeRendering_iResolutionLighting;
 //    GLint m_uniformLocationVolumeRenderingTextureLighting;
 
+    GLint m_uniformLocationVolumeRenderingPreIntegration_iTime;
+    GLint m_uniformLocationVolumeRenderingPreIntegration_iResolution;
+    GLint m_uniformLocationVolumeRenderingPreIntegrationTexture;
+    GLint m_uniformLocationVolumeRenderingPreIntegrationTextureLookupTable;
+
     GLuint m_scalarDataTextureLocation;
     GLuint m_vectorDataTextureLocation;
 
@@ -307,6 +319,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void opengl_createShaderProgramLic();
     void opengl_createShaderProgramVolumeRendering();
     void opengl_createShaderProgramVolumeRenderingLighting();
+    void opengl_createShaderProgramVolumeRenderingPreIntegration();
 
     void opengl_loadScalarDataTexture(std::vector<Color> const &colorMap);
     void opengl_loadVectorDataTexture(std::vector<Color> const &colorMap);
@@ -336,6 +349,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 
     void opengl_setupVolumeRendering();
     void opengl_updateTexture();
+    void opengl_updatePreIntegrationLookupTable();
     void opengl_updateTextureSyntheticCube();
     void opengl_updateTextureSyntheticScene();
     void opengl_updateTextureLoadDataRawFromFile();

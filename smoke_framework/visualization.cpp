@@ -60,7 +60,6 @@ void Visualization::initializeGL() {
 
     glClearColor(0.2F, 0.1F, 0.2F, 1.0F);
 
-
     // Retrieve default textures.
     auto const mainWindowPtr = qobject_cast<MainWindow*>(parent()->parent());
     std::vector<Color> const defaultScalarDataColorMap = mainWindowPtr->m_defaultScalarDataColorMap;
@@ -210,6 +209,7 @@ void Visualization::drawGlyphs()
      */
     modelTransformationMatrices = std::vector<float>(numberOfInstances * 16U, 0.0F); // Remove this placeholder initialization
 
+    // TODO: This shouldn't be here, but otherwise re-binding an already bound Glyphs VAO causes glitches.
     glBindVertexArray(0);
 
     // Buffering section starts here.
@@ -439,6 +439,61 @@ std::vector<float> Visualization::forceFieldDivergence() const
 std::vector<QVector3D> Visualization::computeNormals(std::vector<float> heights) const
 {
     return std::vector<QVector3D>(heights.size(), QVector3D(0,0,1));
+}
+
+static QVector4D transferFunction(float value)
+{
+    // Define colors for the colormap
+    QVector3D const colorNode0{0.0F, 0.0F, 1.0F};  // blue
+    QVector3D const colorNode1{1.0F, 1.0F, 1.0F};  // white
+    QVector3D const colorNode2{1.0F, 0.0F, 0.0F};  // red
+
+    value /= 255.0F; // to range [0...1]
+
+    float alpha = value * 0.1F; // value;
+
+    if (value < 0.2F)
+        alpha = 0.0F;
+
+    QVector3D color0 = colorNode0;
+    QVector3D color1 = colorNode1;
+
+    float t = 0.0F;
+    if (value < 0.5F)
+    {
+        t = 2.0F * value;
+    }
+    else
+    {
+        t = 2.0F * (value - 0.5F);
+        color0 = colorNode1;
+        color1 = colorNode2;
+    }
+
+    QVector4D color;
+
+    color[3U] = alpha;
+
+    for (size_t idx = 0U; idx < 3U; ++idx) // rgb
+        color[idx] = color0[idx] * (1.0F - t) + color1[idx] * t;
+
+    return color;
+}
+
+static float opacityCorrection(float alpha, float sampleRatio)
+{
+    float a_corrected = 1.0 - pow(1.0 - alpha, sampleRatio);
+    return a_corrected;
+}
+
+std::vector<QVector4D> Visualization::computePreIntegrationLookupTable(size_t const DIM) const
+{
+    // placeholder values
+    std::vector<QVector4D> lookupTable;
+    for (size_t idx = 0U; idx < DIM * DIM; ++idx)
+        lookupTable.push_back({0.5F, 0.5F, 0.5F, 1.0F});
+
+    return lookupTable;
 }
 
 void Visualization::onMessageLogged(QOpenGLDebugMessage const &Message) const

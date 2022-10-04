@@ -8,7 +8,6 @@
 #include <optional>
 #include <vector>
 
-using namespace std::placeholders;
 
 class Isoline
 {
@@ -27,6 +26,7 @@ private:
     float const m_cellSideLength;
     QVector2D const m_vertex0;
     Isoline::AmbiguousCaseDecider const m_ambiguousCaseDecider;
+
 
 public:
     enum class InterpolationMethod

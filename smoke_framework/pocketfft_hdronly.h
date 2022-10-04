@@ -153,8 +153,8 @@ template<> struct VLEN<double> { static constexpr size_t val=2; };
  * not providing the aligned_alloc function. We therefore always use the
  * portable emulation alternative.
  */
-#if 0
 //#if __cplusplus >= 201703L
+#if 0
 inline void *aligned_alloc(size_t align, size_t size)
   {
   // aligned_alloc() requires that the requested size is a multiple of "align"

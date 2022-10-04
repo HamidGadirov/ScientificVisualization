@@ -42,10 +42,7 @@ private slots:
     void on_gridpointsSpinBox_valueChanged(int value);
 
     // Simulation, run simulation.
-    void on_pausePlayButton_clicked();
-
-    // Simulation, load data.
-    void on_loadDataButton_clicked();
+    void on_simulationPausePlayPushButton_clicked();
 
     // Visualization, projection.
     void on_visualizationProjectionOrthographicRadioButton_toggled(bool checked);
@@ -54,7 +51,6 @@ private slots:
     // Preprocessing
     void on_quantizationCheckBox_toggled(bool checked);
     void on_quantizationBitsComboBox_currentIndexChanged(int index);
-
     void on_gaussianBlurCheckBox_toggled(bool checked);
     void on_gradientsCheckBox_toggled(bool checked);
 
@@ -178,13 +174,14 @@ private slots:
     void on_volumeRenderingSelectDatFilePushButton_clicked();
     void on_volumeRenderingFragmentShaderSelectionVolumenRenderingRadioButton_clicked();
     void on_volumeRenderingFragmentShaderSelectionVolumetricLightingRadioButton_clicked();
+    void on_volumeRenderingFragmentShaderSelectionVolumeRenderingPreIntegrationRadioButton_clicked();
+    void on_volumeRenderingPausePlayPushButton_clicked();
 
     // Setters
     void setScalarDataMin(float const min);
     void setScalarDataMax(float const max);
     void setVectorDataMin(float const min);
     void setVectorDataMax(float const max);
-
 
 private:
     Ui::MainWindow *ui;

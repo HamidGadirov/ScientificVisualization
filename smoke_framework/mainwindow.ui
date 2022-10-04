@@ -38,7 +38,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QCheckBox" name="showMinMaxDataCheckBox">
+         <widget class="QCheckBox" name="simulationShowMinMaxDataCheckBox">
           <property name="text">
            <string>Show minimum/maximum data values</string>
           </property>
@@ -283,16 +283,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pausePlayButton">
+         <widget class="QPushButton" name="simulationPausePlayPushButton">
           <property name="text">
            <string>Pause / Play</string>
-          </property>
-         </widget>
-        </item>
-        <item alignment="Qt::AlignLeft">
-         <widget class="QPushButton" name="loadDataButton">
-          <property name="text">
-           <string>Load data</string>
           </property>
          </widget>
         </item>
@@ -1802,6 +1795,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QRadioButton" name="volumeRenderingFragmentShaderSelectionVolumeRenderingPreIntegrationRadioButton">
+             <property name="text">
+              <string>Volume renderer (pre-integration)</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1811,6 +1811,13 @@
            <string>Data selection for &quot;Volume renderer&quot; fragment shader</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_9">
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="volumeRenderingDataRawRadioButton">
+             <property name="text">
+              <string>Data raw</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="0">
             <widget class="QRadioButton" name="volumeRenderingSyntheticCubeRadioButton">
              <property name="text">
@@ -1824,6 +1831,13 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="volumeRenderingSelectDatFilePushButton">
+             <property name="text">
+              <string>Select .dat file</string>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="0">
             <widget class="QRadioButton" name="volumeRenderingSyntheticSceneRadioButton">
              <property name="enabled">
@@ -1834,20 +1848,6 @@
              </property>
              <property name="checkable">
               <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QRadioButton" name="volumeRenderingDataRawRadioButton">
-             <property name="text">
-              <string>Data raw</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QPushButton" name="volumeRenderingSelectDatFilePushButton">
-             <property name="text">
-              <string>Select .dat file</string>
              </property>
             </widget>
            </item>
@@ -1897,6 +1897,19 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="volumeRenderingPausePlayPushButton">
+          <property name="text">
+           <string>Pause / Play</string>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -2256,7 +2269,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
+   <sender>simulationShowMinMaxDataCheckBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>scalarDataMinLcdNumber</receiver>
    <slot>setVisible(bool)</slot>
@@ -2272,7 +2285,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
+   <sender>simulationShowMinMaxDataCheckBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>scalarDataMaxLcdNumber</receiver>
    <slot>setVisible(bool)</slot>
@@ -2288,7 +2301,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
+   <sender>simulationShowMinMaxDataCheckBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>vectorDataMinLcdNumber</receiver>
    <slot>setVisible(bool)</slot>
@@ -2304,7 +2317,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>showMinMaxDataCheckBox</sender>
+   <sender>simulationShowMinMaxDataCheckBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>vectorDataMaxLcdNumber</receiver>
    <slot>setVisible(bool)</slot>
