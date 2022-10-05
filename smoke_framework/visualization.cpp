@@ -451,10 +451,7 @@ static QVector4D transferFunction(float value)
 
     value /= 255.0F; // to range [0...1]
 
-    float alpha = value;// * 0.1F; // value;
-
-    if (value < 0.2F)
-        alpha = 0.5F;
+    float const alpha = value < 0.2F ? 0.5F : value;
 
     QVector3D color0 = colorNode0;
     QVector3D color1 = colorNode1;
@@ -481,7 +478,7 @@ static QVector4D transferFunction(float value)
     return color;
 }
 
-static float opacityCorrection(float alpha, float sampleRatio)
+static float opacityCorrection(float const alpha, float const sampleRatio)
 {
     float a_corrected = 1.0 - pow(1.0 - alpha, sampleRatio);
     return a_corrected;
@@ -489,6 +486,9 @@ static float opacityCorrection(float alpha, float sampleRatio)
 
 std::vector<QVector4D> Visualization::computePreIntegrationLookupTable(size_t const DIM) const
 {
+    float const L = 100.0F; // total number of steps from 0 to delta-t
+    float const voxelWidth = 1.0F / 64.0F;
+
     // placeholder values
     std::vector<QVector4D> lookupTable;
     for (size_t idx = 0U; idx < DIM * DIM; ++idx)

@@ -1155,7 +1155,6 @@ void Visualization::opengl_updatePreIntegrationLookupTable()
     std::vector<QVector4D> const lookupTable = computePreIntegrationLookupTable(DIM);
 
     // Set parameters and upload 2D texture data
-//    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_volumeRenderingTextureLocationPreIntegrationLookupTable);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
