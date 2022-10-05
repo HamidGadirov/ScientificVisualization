@@ -18,16 +18,6 @@ const vec3 bbMax = vec3(0.5, 0.5, 0.5);
 const float fovy = 45.0;
 const float zNear = 0.1;
 
-// Light direction
-const vec3 lightDir = vec3(0.0, -1.0, -1.0);
-
-const vec4 lightColor = vec4(1);
-const vec4 specularColor = vec4(1);
-const float ka = 0.5;  // ambient contribution
-const float kd = 0.5;  // diffuse contribution
-const float ks = 0.7;  // specular contribution
-const float exponent = 50.0;  // specular exponent (shininess)
-
 // Number of maximum raycasting samples per ray
 const int sampleNum = 100;
 
@@ -43,8 +33,7 @@ const float sig = 0.4;
 
 // Colors for the colormap
 const vec3 colorNode0 = vec3(0, 0, 1);  // blue
-const vec3 colorNode1 = vec3(1, 1, 1);  // white
-// const vec3 colorNode1 = vec3(0, 1, 0); // green
+const vec3 colorNode1 = vec3(0, 1, 0);  // green
 const vec3 colorNode2 = vec3(1, 0, 0);  // red
 
 vec2 csqr(vec2 a)
@@ -186,7 +175,7 @@ void mainImage(out vec4 fragColor)
     /******************* test against bounding box ********************/
     float tNear, tFar;
     bool hit = intersectBoundingBox(camPos, rayDir, tNear, tFar);
-    vec4 background = vec4(0.1, 0.2, 0.4, 1.0);
+    vec4 background = vec4(0.1, 0.0, 0.0, 1.0);
     if (!hit)
     {
        fragColor = background;
