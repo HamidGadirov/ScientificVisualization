@@ -60,7 +60,7 @@ float sampleVolume(vec3 texCoord)
  */
 vec4 transferFunction(float value)
 {
-    float alpha = value;
+    float alpha = value * 0.5F;
     if (value < 0.2)
         alpha = 0.5;
 
