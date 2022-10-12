@@ -32,6 +32,12 @@ void MainWindow::on_volumeRenderingFragmentShaderSelectionVolumeRenderingPreInte
     visualizationPtr->m_volumeRenderFragShader = Visualization::VolumeRenderFragShader::VolumeRendererPreIntegration;
 }
 
+void MainWindow::on_volumeRenderingFragmentShaderSelectionVolumeRenderingOverlayRenderingRadioButton_clicked()
+{
+    auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
+    visualizationPtr->m_volumeRenderFragShader = Visualization::VolumeRenderFragShader::VolumeRendererOverlayRendering;
+}
+
 void MainWindow::on_timeStepVolumeRenderingGroupBoxSpinBox_valueChanged(int arg1)
 {
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");

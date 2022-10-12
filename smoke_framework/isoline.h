@@ -4,10 +4,7 @@
 #include <QVector2D>
 
 #include <array>
-#include <functional>
-#include <optional>
 #include <vector>
-
 
 class Isoline
 {
@@ -26,7 +23,6 @@ private:
     float const m_cellSideLength;
     QVector2D const m_vertex0;
     Isoline::AmbiguousCaseDecider const m_ambiguousCaseDecider;
-
 
 public:
     enum class InterpolationMethod

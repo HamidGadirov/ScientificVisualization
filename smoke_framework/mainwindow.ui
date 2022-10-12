@@ -1802,6 +1802,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QRadioButton" name="volumeRenderingFragmentShaderSelectionVolumeRenderingOverlayRenderingRadioButton">
+             <property name="text">
+              <string>Volume renderer (overlay rendering)</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>

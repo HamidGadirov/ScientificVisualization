@@ -10,42 +10,41 @@ uniform sampler2D lookupTable;
 
 out vec4 color;
 
-// Bounding box
+// bounding box
 const vec3 bbMin = vec3(-0.5, -0.5, -0.5);
 const vec3 bbMax = vec3(0.5, 0.5, 0.5);
 
-// Additional camera parameters
+// additional camera parameters
 const float fovy = 45.0;
 const float zNear = 0.1;
 
-// Number of maximum raycasting samples per ray
-const int sampleNum = 100;
+// number of maximum raycasting samples per ray
+const int sampleNum = 100; // 150
 
-// Width of one voxel
+// width of one voxel
 const float voxelWidth = 1.0 / 64.0;
 
-// Epsilon for comparisons
+// epsilon for comparisons
 const float EPS = 0.000001;
 const float PI = 3.14159267;
 const float period = 2.0;
-// Sigma for the gaussian function
+// sigma for the gaussian function
 const float sig = 0.4;
 
-// Colors for the colormap
+// for colormapping
+// Define your colors for the colormap
 const vec3 colorNode0 = vec3(0, 0, 1);  // blue
-const vec3 colorNode1 = vec3(0, 1, 0);  // green
+// const vec3 colorNode1 = vec3(1, 1, 1); // white
+const vec3 colorNode1 = vec3(0, 1, 0); // green
 const vec3 colorNode2 = vec3(1, 0, 0);  // red
 
-vec2 csqr(vec2 a)
-{
-    return vec2(a.x*a.x - a.y*a.y, 2.*a.x*a.y);
-}
+vec2 csqr( vec2 a )  { return vec2( a.x*a.x - a.y*a.y, 2.*a.x*a.y  ); }
 
 /**
- * Samples the volume texture at a given position.
+ *	Samples the volume texture at a given position.
  *
- * @param volumeCoord The position one wants to retrieve the sample of (in world coordinates).
- * @return The sample value at the given position.
+ *	@param volumeCoord The position one wants to retrieve the sample of (in world coordinates).
+ *	@return The sample value at the given position.
  */
 float sampleVolume(vec3 texCoord)
 {
@@ -53,21 +52,21 @@ float sampleVolume(vec3 texCoord)
 }
 
 /**
- * Evaluates the transfer function for a given sample value
+ *	Evaluates the transfer function for a given sample value
  *
- * @param value The sample value
- * @return The color for the given sample value
+ *	@param value The sample value
+ *	@return The color for the given sample value
  */
 vec4 transferFunction(float value)
 {
-    float alpha = value * 0.5F;
-    if (value < 0.2)
-        alpha = 0.5;
+    float alpha = value * 0.5F; // value;
+    if (value < 0.2F)
+        alpha = 0.5F; // 0.0F;
 
     float t = 0.0;
     vec3 color0 = colorNode0;
     vec3 color1 = colorNode1;
-    if (value < 0.5)
+    if( value < 0.5 )
     {
         t = 2.0 * value;
     }
@@ -76,7 +75,7 @@ vec4 transferFunction(float value)
         t = 2.0 * (value - 0.5);
         color0 = colorNode1;
         color1 = colorNode2;
-    }
+     }
     vec4 color;
     color.a = alpha;
     color.rgb = color0 * (1.0 - t) + color1 * t;
@@ -84,13 +83,13 @@ vec4 transferFunction(float value)
 }
 
 /**
- * Intersects a ray with the bounding box and returs the intersection points
+ *	Intersects a ray with the bounding box and returs the intersection points
  *
- * @param rayOrig The origin of the ray
- * @param rayDir The direction of the ray
- * @param tNear OUT: The distance from the ray origin to the first intersection point
- * @param tFar OUT: The distance from the ray origin to the second intersection point
- * @return True if the ray intersects the bounding box, false otherwise.
+ * 	@param rayOrig The origin of the ray
+ * 	@param rayDir The direction of the ray
+ *  @param tNear OUT: The distance from the ray origin to the first intersection point
+ *	@param tFar OUT: The distance from the ray origin to the second intersection point
+ *	@return True if the ray intersects the bounding box, false otherwise.
  */
 bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float tFar)
 {
@@ -111,14 +110,15 @@ bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float 
 }
 
 /**
- * Correct opacity for the current sampling rate
+ *	Correct opacity for the current sampling rate
  *
- * @param alpha: input opacity.
- * @param samplingRatio: the ratio between current sampling rate and the original.
+ *	@param alpha: input opacity.
+ *	@param samplingRatio: the ratio between current sampling rate and the original.
+
  */
-float opacityCorrection(in float alpha, in float samplingRatio)
+float opacityCorrection(in float alpha, in float sampleRatio)
 {
-    float a_corrected = 1.0 - pow(1.0 - alpha, samplingRatio);
+    float a_corrected = 1.0 - pow(1.0 - alpha, sampleRatio);
     return a_corrected;
 }
 
@@ -146,6 +146,12 @@ void accumulation(float value, float sampleRatio, inout vec4 composedColor)
  */
 void mainImage(out vec4 fragColor)
 {
+    // show the lookup table
+    /*
+    fragColor = texture(lookupTable, uv);
+    return;
+    */
+    
     float aspect = iResolution.x / iResolution.y;
 
     /******************** compute camera parameters ********************/
@@ -175,7 +181,8 @@ void mainImage(out vec4 fragColor)
     /******************* test against bounding box ********************/
     float tNear, tFar;
     bool hit = intersectBoundingBox(camPos, rayDir, tNear, tFar);
-    vec4 background = vec4(0.1, 0.0, 0.0, 1.0);
+    vec4 background = vec4(0.0, 0.0, 0.0, 1.0);
+    
     if (!hit)
     {
        fragColor = background;
@@ -214,9 +221,9 @@ void mainImage(out vec4 fragColor)
         t += tstep;
     }
 
-    fragColor = finalColor * finalColor.a + (1.0 - finalColor.a) * background;
+    fragColor.rgb = mix(background.rgb, finalColor.rgb, finalColor.a);
+    fragColor.a = 1.0F;
 }
-
 
 void main()
 {

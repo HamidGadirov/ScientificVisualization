@@ -8,7 +8,6 @@ uniform sampler1D textureSampler;
 
 out vec4 color;
 
-
 const vec3 vertNormal = vec3(0.0F, 0.0F, 1.0F); // Up
 const vec3 viewPosition = vec3(300.0F, 300.0F, 200.0F);
 const vec3 lightPosition = vec3(300.0F, 300.0F, 200.0F);

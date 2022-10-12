@@ -58,6 +58,7 @@ void Visualization::opengl_createShaderPrograms()
     opengl_createShaderProgramVolumeRendering();
     opengl_createShaderProgramVolumeRenderingLighting();
     opengl_createShaderProgramVolumeRenderingPreIntegration();
+    opengl_createShaderProgramVolumeRenderingOverlayRendering();
 }
 
 void Visualization::opengl_setupAllBuffers()
@@ -656,6 +657,26 @@ void Visualization::opengl_createShaderProgramVolumeRenderingPreIntegration()
     qDebug() << "m_shaderProgramVolumeRenderingPreIntegration initialized.";
 }
 
+void Visualization::opengl_createShaderProgramVolumeRenderingOverlayRendering()
+{
+    m_shaderProgramVolumeRenderingOverlayRendering.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/volume_rendering.vert");
+    m_shaderProgramVolumeRenderingOverlayRendering.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/volume_rendering_overlay_rendering.frag");
+    m_shaderProgramVolumeRenderingOverlayRendering.link();
+
+    m_uniformLocationVolumeRenderingOverlayRendering_iTime = m_shaderProgramVolumeRenderingOverlayRendering.uniformLocation("iTime");
+    Q_ASSERT(m_uniformLocationVolumeRenderingOverlayRendering_iTime != -1);
+
+    m_uniformLocationVolumeRenderingOverlayRendering_iResolution = m_shaderProgramVolumeRenderingOverlayRendering.uniformLocation("iResolution");
+    Q_ASSERT(m_uniformLocationVolumeRenderingOverlayRendering_iResolution != -1);
+
+    m_uniformLocationVolumeRenderingOverlayRenderingTexture = m_shaderProgramVolumeRenderingOverlayRendering.uniformLocation("textureSampler");
+    Q_ASSERT(m_uniformLocationVolumeRenderingOverlayRenderingTexture != -1);
+
+    m_shaderProgramVolumeRenderingOverlayRendering.bind();
+
+    qDebug() << "m_shaderProgramVolumeRenderingOverlayRendering initialized.";
+}
+
 void Visualization::opengl_loadVectorDataTexture(std::vector<Color> const &colorMap)
 {
     glBindTexture(GL_TEXTURE_1D, m_vectorDataTextureLocation);
@@ -1103,22 +1124,13 @@ void Visualization::opengl_drawLic()
 {
     std::vector<float> vectorField_in_x;
     std::vector<float> vectorField_in_y;
-    vectorField_in_x = m_simulation.velocityXInterpolated(m_licObject.getXDim(), m_licObject.getYDim()); // These should get the force field vectors of size equal to the simulation area, if I understand the function correctly?
+    vectorField_in_x = m_simulation.velocityXInterpolated(m_licObject.getXDim(), m_licObject.getYDim());
     vectorField_in_y = m_simulation.velocityYInterpolated(m_licObject.getXDim(), m_licObject.getYDim());
-
-    //m_licObject.resetTexture(); // Uncomment this line if you want the noise texture to look like its "Flowing".
 
     std::vector<float> texture_in = m_licObject.getTexture();
 
     std::vector<uint8_t> texture_out = m_licObject.updateTexture(vectorField_in_x, vectorField_in_y, texture_in); //Generate the texture to be sent to openGL
 
-    /*
-    if (m_lic_testing_iterator % 10 == 0) // print out image every 10 steps (just so that it doesn't spam out images every millisecond), don't keep this in for openGL
-        m_licObject.writeImage(texture_out); // For testing, delete later
-
-    ++m_lic_testing_iterator; // can get rid of this too
-    // do openGL stuff here.
-    */
     m_shaderProgramLic.bind();
     glUniformMatrix4fv(m_uniformLocationLic_projection, 1, GL_FALSE, m_projectionTransformationMatrix.data());
     glUniform1i(m_uniformLocationLicTexture, 0);
@@ -1178,8 +1190,8 @@ void Visualization::opengl_updateTextureSyntheticCube()
     // Generate synthetic 3D volume data
     auto const ABCvolume = [](QVector3D texCoord)
     {
-        QVector3D const center1 = QVector3D(0.25F, 0.25F, 0.25F);
-        QVector3D const center2 = QVector3D(0.75F, 0.75F, 0.75F);
+        QVector3D const center1{0.25F, 0.25F, 0.25F};
+        QVector3D const center2{0.75F, 0.75F, 0.75F};
 
         float const dist1 = (texCoord - center1).length();
         float const dist2 = (texCoord - center2).length();
@@ -1212,9 +1224,14 @@ void Visualization::opengl_updateTextureSyntheticCube()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // The texture stores densities, not colors. However, we still have to provide a border "color" for OpenGL.
+    // Only the first ("red") of these four values will be read.
+    std::array<GLfloat, 4U> const borderValue{0.0F, 0.0F, 0.0F, 0.0F};
+    glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, borderValue.data());
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -1246,6 +1263,10 @@ void Visualization::opengl_loadDataRawFromFile()
     qDebug() << "Components:" << m_datRawInfo.components();
     qDebug() << "Resolution:" << m_datRawInfo.resolution();
     qDebug() << "Dimensions:" << m_datRawInfo.dimensions();
+    qDebug() << "Number of time steps:" << m_datRawInfo.time_steps();
+    qDebug() << "Attempt to load the following files:";
+    for (unsigned timeStep = 0U; timeStep < m_datRawInfo.time_steps(); ++timeStep)
+        qDebug() << r.info().multi_file_name(timeStep).c_str();
 
     QDebug debugFormat = qDebug();
     debugFormat << "Format:";
@@ -1264,11 +1285,63 @@ void Visualization::opengl_loadDataRawFromFile()
         break;
     }
 
+    size_t const totalCubeSize = m_datRawInfo.resolution()[0] * m_datRawInfo.resolution()[1] * m_datRawInfo.resolution()[2] * m_datRawInfo.time_steps();
+    m_volumeRenderTextureData.resize(totalCubeSize);
+    std::fill(m_volumeRenderTextureData.begin(), m_volumeRenderTextureData.end(), 0.0F);
+
+    /*
+    // For generating debugging data
+    for (size_t cubeIdx = 0U; cubeIdx < 8U; ++cubeIdx)
+    {
+        size_t offset;
+        switch (cubeIdx)
+        {
+            case 0U: offset = 0U; break;
+            case 1U: offset = 256U; break;
+            case 2U: offset = 512U * 512U * 256U; break;
+            case 3U: offset = 512U * 512U * 256U + 256U; break;
+            case 4U: offset = 512U * 256U; break;
+            case 5U: offset = 512U * 256U + 256U; break;
+            case 6U: offset = 512U * 512U * 256U + 512U * 256U; break;
+            case 7U: offset = 512U * 512U * 256U + 256U + 512U * 256U; break;
+        }
+        for (size_t zIdx = 0U; zIdx < 256U; ++zIdx)
+            for (size_t yIdx = 0U; yIdx < 256U; ++yIdx)
+                for (size_t xIdx = 0U; xIdx < 256U; ++xIdx)
+                    m_volumeRenderTextureData[offset + zIdx * 512U * 512U + yIdx * 512U + xIdx] = cubeIdx * (255U / 8U);
+    }
+    */
+
+    size_t cubeIdx = 0U;
+    std::vector<std::uint8_t> cubeSmall;
     while (r)
     {
-        m_volumeRenderTextureData.resize(r.read_current(nullptr, 0));
-        r.read_current(m_volumeRenderTextureData.data(), m_volumeRenderTextureData.size());
+        cubeSmall.resize(r.read_current(nullptr, 0));
+        r.read_current(cubeSmall.data(), cubeSmall.size());
         r.move_next();
+
+        size_t offset;
+        switch (cubeIdx)
+        {
+            case 0U: offset = 0U; break;
+            case 1U: offset = 256U; break;
+            case 2U: offset = 512U * 512U * 256U; break;
+            case 3U: offset = 512U * 512U * 256U + 256U; break;
+            case 4U: offset = 512U * 256U; break;
+            case 5U: offset = 512U * 256U + 256U; break;
+            case 6U: offset = 512U * 512U * 256U + 512U * 256U; break;
+            case 7U: offset = 512U * 512U * 256U + 256U + 512U * 256U; break;
+        }
+
+        size_t cubeSmallIdx = 0U;
+        for (size_t zIdx = 0U; zIdx < 256U; ++zIdx)
+            for (size_t yIdx = 0U; yIdx < 256U; ++yIdx)
+                for (size_t xIdx = 0U; xIdx < 256U; ++xIdx)
+                    m_volumeRenderTextureData[offset + zIdx * 512U * 512U + yIdx * 512U + xIdx] = cubeSmall[cubeSmallIdx++];
+
+        ++cubeIdx;
+
+        qDebug() << "Loaded a time step";
     }
 }
 
@@ -1278,21 +1351,48 @@ void Visualization::opengl_updateTextureLoadDataRawFromFile()
     // Set texture parameters and upload 3D texture data
     glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
 
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // The texture stores densities, not colors. However, we still have to provide a border "color" for OpenGL.
+    // Only the first ("red") of these four values will be read.
+    std::array<GLfloat, 4U> const borderValue{0.0F, 0.0F, 0.0F, 0.0F};
+    glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, borderValue.data());
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+    GLenum textureDataType;
+    switch (m_datRawInfo.format())
+    {
+    case datraw::scalar_type::uint8:
+        textureDataType = GL_UNSIGNED_BYTE;
+        break;
+
+    case datraw::scalar_type::uint16:
+        textureDataType = GL_UNSIGNED_SHORT;
+        break;
+
+    default:
+        qWarning() << "3D texture data format not recognized";
+        return;
+    }
+
+    // TODO: Dimensions hardcoded for a texture atlas of 2^3 256^3 cubes.
     glTexImage3D(GL_TEXTURE_3D,
                  0,
                  GL_RED,
+                 512U,
+                 512U,
+                 512U,
+                 /*
                  m_datRawInfo.resolution()[0],
                  m_datRawInfo.resolution()[1],
                  m_datRawInfo.resolution()[2],
+                 */
                  0,
                  GL_RED,
-                 GL_UNSIGNED_SHORT,
+                 textureDataType,
                  m_volumeRenderTextureData.data());
 }
 
@@ -1314,7 +1414,7 @@ void Visualization::opengl_drawVolumeRendering()
         glUniform2fv(m_uniformLocationVolumeRendering_iResolution, 1, iResolution.data());
         glUniform1f(m_uniformLocationVolumeRendering_iTime, m_volumeRenderingPauseTimestamp);
 
-        glUniform1i(m_uniformLocationVolumeRenderingPreIntegrationTexture, 0);
+        glUniform1i(m_uniformLocationVolumeRenderingTexture, 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
         break;
@@ -1337,6 +1437,16 @@ void Visualization::opengl_drawVolumeRendering()
         glUniform1i(m_uniformLocationVolumeRenderingPreIntegrationTextureLookupTable, 1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, m_volumeRenderingTextureLocationPreIntegrationLookupTable);
+        break;
+
+    case VolumeRenderFragShader::VolumeRendererOverlayRendering:
+        m_shaderProgramVolumeRenderingOverlayRendering.bind();
+        glUniform2fv(m_uniformLocationVolumeRenderingOverlayRendering_iResolution, 1, iResolution.data());
+        glUniform1f(m_uniformLocationVolumeRenderingOverlayRendering_iTime, m_volumeRenderingPauseTimestamp);
+
+        glUniform1i(m_uniformLocationVolumeRenderingOverlayRenderingTexture, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, m_volumeRenderingTextureLocation);
         break;
     }
 

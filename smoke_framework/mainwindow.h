@@ -175,6 +175,7 @@ private slots:
     void on_volumeRenderingFragmentShaderSelectionVolumenRenderingRadioButton_clicked();
     void on_volumeRenderingFragmentShaderSelectionVolumetricLightingRadioButton_clicked();
     void on_volumeRenderingFragmentShaderSelectionVolumeRenderingPreIntegrationRadioButton_clicked();
+    void on_volumeRenderingFragmentShaderSelectionVolumeRenderingOverlayRenderingRadioButton_clicked();
     void on_volumeRenderingPausePlayPushButton_clicked();
 
     // Setters

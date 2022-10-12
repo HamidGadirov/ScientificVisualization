@@ -444,9 +444,10 @@ std::vector<QVector3D> Visualization::computeNormals(std::vector<float> heights)
 static QVector4D transferFunction(float value)
 {
     // Define colors for the colormap
-    QVector3D const colorNode0{0.0F, 0.0F, 1.0F};  // blue
-    QVector3D const colorNode1{0.0F, 1.0F, 0.0F}; // green
-    QVector3D const colorNode2{1.0F, 0.0F, 0.0F};  // red
+    QVector3D const colorNode0{0.0F, 0.0F, 1.0F}; // blue
+    // QVector3D const colorNode1{1.0F, 1.0F, 1.0F}; // white
+     QVector3D const colorNode1{0.0F, 1.0F, 0.0F}; // green
+    QVector3D const colorNode2{1.0F, 0.0F, 0.0F}; // red
 
     value /= 255.0F; // to range [0...1]
 
@@ -482,14 +483,14 @@ static QVector4D transferFunction(float value)
 
 static float opacityCorrection(float const alpha, float const sampleRatio)
 {
-    float a_corrected = 1.0 - pow(1.0 - alpha, sampleRatio);
-    return a_corrected;
+     return 1.0F - std::pow(1.0F - alpha, sampleRatio);
 }
 
 std::vector<QVector4D> Visualization::computePreIntegrationLookupTable(size_t const DIM) const
 {
     float const L = 100.0F; // total number of steps from 0 to delta-t
-    float const voxelWidth = 1.0F / 64.0F;
+
+    // TODO: modify the transferFunction and add necessary functions
 
     // placeholder values
     std::vector<QVector4D> lookupTable;

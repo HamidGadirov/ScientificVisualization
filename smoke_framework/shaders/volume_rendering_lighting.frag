@@ -50,7 +50,7 @@ const int sampleNum = 256;
 const float voxelWidth = 1.0 / 64.0;
 
 // epsilon for comparisons
-const float EPS = 0.000001;
+const float EPS = 0.0000001;
 
 /**
  *	Returns whether a given point is inside a given sphere.
@@ -243,7 +243,6 @@ void mainImage(out vec4 fragColor)
     /******************* test against bounding box ********************/
     float tNear, tFar;
     bool hit = intersectBoundingBox(camPos, rayDir, tNear, tFar);
-    // vec4 background = vec4(1.0);
     vec4 background = vec4(0.0F, 0.0F, 0.0F, 1.0F);
     if(tNear < 0.0)
         tNear = 0.0;

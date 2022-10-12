@@ -58,7 +58,8 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     {
         VolumeRenderer,
         VolumetricLighting,
-        VolumeRendererPreIntegration
+        VolumeRendererPreIntegration,
+        VolumeRendererOverlayRendering
     };
 
     QTimer m_timer; // For triggering simulation updates and render events.
@@ -192,6 +193,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     QOpenGLShaderProgram m_shaderProgramVolumeRendering;
     QOpenGLShaderProgram m_shaderProgramVolumeRenderingLighting;
     QOpenGLShaderProgram m_shaderProgramVolumeRenderingPreIntegration;
+    QOpenGLShaderProgram m_shaderProgramVolumeRenderingOverlayRendering;
 
     GLint m_uniformLocationScalarDataScaleTexture_rangeMin;
     GLint m_uniformLocationScalarDataScaleTexture_rangeMax;
@@ -259,6 +261,10 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLint m_uniformLocationVolumeRenderingPreIntegrationTexture;
     GLint m_uniformLocationVolumeRenderingPreIntegrationTextureLookupTable;
 
+    GLint m_uniformLocationVolumeRenderingOverlayRendering_iTime;
+    GLint m_uniformLocationVolumeRenderingOverlayRendering_iResolution;
+    GLint m_uniformLocationVolumeRenderingOverlayRenderingTexture;
+
     GLuint m_scalarDataTextureLocation;
     GLuint m_vectorDataTextureLocation;
 
@@ -320,6 +326,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void opengl_createShaderProgramVolumeRendering();
     void opengl_createShaderProgramVolumeRenderingLighting();
     void opengl_createShaderProgramVolumeRenderingPreIntegration();
+    void opengl_createShaderProgramVolumeRenderingOverlayRendering();
 
     void opengl_loadScalarDataTexture(std::vector<Color> const &colorMap);
     void opengl_loadVectorDataTexture(std::vector<Color> const &colorMap);

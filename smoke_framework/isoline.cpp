@@ -15,7 +15,6 @@ Isoline::Isoline(std::vector<float> const &values,
     m_cellSideLength(cellSideLength),
     m_ambiguousCaseDecider(ambiguousCaseDecider)
 {
-
 }
 
 std::vector<QVector2D> Isoline::vertices() const

@@ -18,5 +18,6 @@
         <file>shaders/volume_rendering.frag</file>
         <file>shaders/volume_rendering_lighting.frag</file>
         <file>shaders/volume_rendering_preintegration.frag</file>
+        <file>shaders/volume_rendering_overlay_rendering.frag</file>
     </qresource>
 </RCC>
