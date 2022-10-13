@@ -719,10 +719,10 @@ datraw::info<C>::parse_multi_file_description(const string_type& str,
         width = strWidth.empty() ? 0 : datraw::parse<int>(strWidth);
 
         auto strSkip = matches.str(3);
-        skip = strWidth.empty() ? 0 : datraw::parse<int>(strSkip);
+        skip = strSkip.empty() ? 0 : datraw::parse<int>(strSkip);
 
         auto strStride = matches.str(4);
-        stride = strWidth.empty() ? 1 : datraw::parse<int>(strStride);
+        stride = strStride.empty() ? 1 : datraw::parse<int>(strStride);
 
         auto retval = std::regex_replace(str, RX, matches.str(1)
             + DATRAW_TPL_LITERAL(C, "d"));
