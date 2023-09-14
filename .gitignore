@@ -79,3 +79,6 @@ CMakeLists.txt.user*
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+
+## Build folder
+[Bb]uild
