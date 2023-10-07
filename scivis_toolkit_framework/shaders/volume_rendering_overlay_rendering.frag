@@ -9,15 +9,16 @@ uniform sampler3D textureSampler;
 
 out vec4 color;
 
-// Color map for the time steps
-const vec3 colorTimeStep0 = vec3(0.26149F, 0.08339F, 0.26149F);
-const vec3 colorTimeStep1 = vec3(0.938261F, 0.467233F, 0.938261F);
-const vec3 colorTimeStep2 = vec3(0.843763F, 0.80685F, 0.843763F);
-const vec3 colorTimeStep3 = vec3(0.41466F, 0.99044F, 0.41466F);
-const vec3 colorTimeStep4 = vec3(0.205837F, 0.916873F, 0.205837F);
-const vec3 colorTimeStep5 = vec3(0.174426F, 0.600076F, 0.174426F);
-const vec3 colorTimeStep6 = vec3(0.0279014F, 0.226128F, 0.0279014F);
-const vec3 colorTimeStep7 = vec3(0.00955002F, 0.0196299F, 0.00955002F);
+// The Turbo color map for the time steps, interpolated to 8 colors.
+const vec3 colorTimeStep0 = vec3(0.19483F, 0.08339F, 0.26149F);
+const vec3 colorTimeStep1 = vec3(0.276877F, 0.467233F, 0.938261F);
+const vec3 colorTimeStep2 = vec3(0.111057F, 0.80685F, 0.843763F);
+const vec3 colorTimeStep3 = vec3(0.392349F, 0.99044F, 0.41466F);
+const vec3 colorTimeStep4 = vec3(0.816737F, 0.916873F, 0.205837F);
+const vec3 colorTimeStep5 = vec3(0.99648F, 0.600076F, 0.174426F);
+const vec3 colorTimeStep6 = vec3(0.857794F, 0.226128F, 0.0279014F);
+const vec3 colorTimeStep7 = vec3(0.49321F, 0.0196299F, 0.00955002F);
+
 const vec3 colorsTimeStep[8] = vec3[8](colorTimeStep0, colorTimeStep1, colorTimeStep2, colorTimeStep3, colorTimeStep4, colorTimeStep5, colorTimeStep6, colorTimeStep7);
 
 // bounding box
