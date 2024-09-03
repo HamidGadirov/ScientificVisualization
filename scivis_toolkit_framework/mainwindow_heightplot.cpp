@@ -10,9 +10,9 @@ void MainWindow::on_showHeightPlotCheckBox_toggled(bool checked)
     visualizationPtr->makeCurrent();
 
     if (checked)
-        glEnable(GL_DEPTH_TEST);
+        visualizationPtr->glEnable(GL_DEPTH_TEST);
     else
-        glDisable(GL_DEPTH_TEST);
+        visualizationPtr->glDisable(GL_DEPTH_TEST);
 }
 
 void MainWindow::on_heightplotDataTypeComboBox_currentIndexChanged(int index)
