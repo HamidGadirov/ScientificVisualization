@@ -9,7 +9,15 @@ void MainWindow::on_quantizationCheckBox_toggled(bool checked)
     // When checked, send the current value of the spinbox to the backend by triggering it with
     // its current index.
     if (checked)
+    {
         on_quantizationBitsComboBox_currentIndexChanged(ui->quantizationBitsComboBox->currentIndex());
+    }
+    else
+    {
+        // Enabling quantization sets this values to the max value used in quantization.
+        // Disabling quantization here sets it back to the default.
+        on_scalarDataMappingClampingMaxSlider_valueChanged(100); // 1*100
+    }
 }
 
 void MainWindow::on_quantizationBitsComboBox_currentIndexChanged(int index)

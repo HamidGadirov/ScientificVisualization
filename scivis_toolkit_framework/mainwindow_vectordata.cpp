@@ -67,7 +67,7 @@ void MainWindow::on_vectorDataGlyphMagnifierDoubleSpinBox_valueChanged(double ar
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_vectorDataMagnifier = static_cast<float>(arg1);
 
-    ui->vectorDataGlyphMagnifierSlider->setValue(arg1 * 100.0);
+    ui->vectorDataGlyphMagnifierSlider->setValue(static_cast<int>(arg1 * 100.0));
 }
 
 void MainWindow::on_vectorDataColorMapComboBox_currentIndexChanged(int index)
@@ -75,7 +75,7 @@ void MainWindow::on_vectorDataColorMapComboBox_currentIndexChanged(int index)
     switch (index)
     {
         case 0: m_vectorDataColorMap = ColorMap::Grayscale; break;
-        case 1: m_vectorDataColorMap = ColorMap::Rainbow; break;
+        case 1: m_vectorDataColorMap = ColorMap::Turbo; break;
         case 2: m_vectorDataColorMap = ColorMap::HeatMap; break;
         case 3: m_vectorDataColorMap = ColorMap::BlueYellow; break;
     }

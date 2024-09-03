@@ -2,7 +2,6 @@
 // volume_rendering_lighting fragment shader
 
 // TODO If you want to change from central to intermediate differences, do it here by commenting/uncommenting the corresponding #define
-//#define USE_SOBEL
 //#define USE_CENTRAL
 #define USE_INTERMEDIATE
 
@@ -13,23 +12,27 @@ uniform float iTime;
 
 out vec4 color;
 
-// first three coordinates: position
-// w-component: radius
-const vec4 sphere1 = vec4(0.0F, 0.0F, 0.0F, 1.0F);
-const vec4 sphere2 = vec4(1.0F, 1.0F, 1.0F, 1.5F);
-const vec4 sphere3 = vec4(1.0F, 0.0F, 3.0F, 0.5F);
+// first three coordinates: center position
+// w-component: radius for spheres, half-width for cubes
+const vec4 cube1 = vec4(0.0F, 0.0F, 0.0F, 1.0F);
+const vec4 cube2 = vec4(1.0F, 1.0F, 1.0F, 1.5F);
+const vec4 sphere1 = vec4(1.0F, 0.0F, 3.0F, 0.5F);
 
 // density of objects
-const float s1Dens = 0.015F;
-const float s2Dens = 0.02F;
-const float s3Dens = 0.03F;
+const float cube1Density = 0.015F;
+const float cube2Density = 0.02F;
+const float sphere1Density = 0.03F;
 
 // bounding box
-const vec3 bbMin = vec3(-1.5F, -1.5F, -1.5F);
-const vec3 bbMax = vec3(2.5F, 2.5F, 3.5F);
+// These are the dimensions in which the objects exists...
+// const vec3 bbMin = vec3(-1.5F, -1.5F, -1.5F);
+// const vec3 bbMax = vec3(2.5F, 2.5F, 3.5F);
+// However, the bounding box intersection algorithm requires a cube as a bounding box:
+const vec3 bbMin = vec3(-3.5F);
+const vec3 bbMax = vec3(3.5F);
 
 // additional camera parameters
-const float fovy = 45.0F;
+const float fovy = 58.0F * (3.14159267F / 180.0F); // degrees converted to radians
 const float zNear = 0.1F;
 
 // light direction
@@ -49,7 +52,7 @@ const int sampleNum = 256;
 const float voxelWidth = 1.0F / 64.0F;
 
 // epsilon for comparisons
-const float EPS = 0.0000001F;
+const float EPS = 1.0E-7F;
 
 /**
  *	Returns whether a given point is inside a given sphere.
@@ -61,11 +64,7 @@ const float EPS = 0.0000001F;
 bool isInSphere(vec3 point, vec4 sphere)
 {
     vec3 spherePos = sphere.xyz;
-
-    if (length(point - spherePos) <= sphere.w)
-        return true;
-    else
-        return false;
+    return length(point - spherePos) <= sphere.w;
 }
 
 /**
@@ -78,10 +77,7 @@ bool isInSphere(vec3 point, vec4 sphere)
 bool isInCube(vec3 point, vec4 cube)
 {
     vec3 dist = abs(point.xyz - cube.xyz);
-
-    if (all(lessThan(dist, vec3(cube.w))))
-        return true;
-    else return false;
+    return all(lessThan(dist, vec3(cube.w)));
 }
 
 /**
@@ -92,20 +88,20 @@ bool isInCube(vec3 point, vec4 cube)
  */
 float sampleVolume(vec3 volumeCoord)
 {
-    bool in1 = isInCube(volumeCoord, sphere1);
-    bool in2 = isInCube(volumeCoord, sphere2);
-    bool in3 = isInSphere(volumeCoord, sphere3);
+    bool in1 = isInCube(volumeCoord, cube1);
+    bool in2 = isInCube(volumeCoord, cube2);
+    bool in3 = isInSphere(volumeCoord, sphere1);
 
-    float result = 0.0;
+    float result = 0.0F;
 
     if (in1)
-        result += s1Dens;
+        result += cube1Density;
 
     if (in2)
-        result += s2Dens;
+        result += cube2Density;
 
     if (in3)
-        result += s3Dens;
+        result += sphere1Density;
 
     return result;
 }
@@ -120,11 +116,11 @@ vec4 transferFunction(float value)
 {
     if (value > EPS)
     {
-        if (value > s1Dens + EPS)
+        if (value > cube1Density + EPS)
         {
-            if (value > s2Dens + EPS)
+            if (value > cube2Density + EPS)
             {
-                if (value > s1Dens + s2Dens + EPS)
+                if (value > cube1Density + cube2Density + EPS)
                 {
                     return vec4(0.0F, 0.0F, 0.0F, 1.0F);
                 }
@@ -142,9 +138,9 @@ vec4 transferFunction(float value)
  *
  * 	@param rayOrig The origin of the ray
  * 	@param rayDir The direction of the ray
- *  @param tNear OUT: The distance from the ray origin to the first intersection point
- *	@param tFar OUT: The distance from the ray origin to the second intersection point
- *	@return True if the ray intersects the bounding box, false otherwise.
+ *  @param tNear OUT The distance from the ray origin to the first intersection point
+ *  @param tFar OUT The distance from the ray origin to the second intersection point
+ *  @return True if the ray intersects the bounding box, false otherwise.
  */
 bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float tFar)
 {
@@ -161,7 +157,7 @@ bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float 
     tNear = largestTMin;
     tFar = smallestTMax;
 
-    return (smallestTMax > largestTMin);
+    return smallestTMax > largestTMin;
 }
 
 /**
@@ -209,7 +205,7 @@ vec4 lighting(vec4 diffuseColor, vec3 normal, vec3 eyeDir)
  *	Main Function:
  *  Computes the color for the given fragment.
  *
- *	@param fragColor OUT: The color of the pixel / fragment.
+ *	@param fragColor OUT The color of the pixel / fragment.
  */
 void mainImage(out vec4 fragColor)
 {
@@ -260,10 +256,11 @@ void mainImage(out vec4 fragColor)
     vec3 finalGradient = vec3(0.0F);
 
     /******************** main raycasting loop *******************/
-    for (int i = 0; i < sampleNum; i++)
+    for (int i = 0; i < sampleNum; ++i)
     {
         if (finalColor.a > 0.99F)
             break; // early ray termination!
+
         pos += rayStepSize * rayDir;
         float sampleValue = sampleVolume(pos);
         vec4 color = transferFunction(sampleValue);

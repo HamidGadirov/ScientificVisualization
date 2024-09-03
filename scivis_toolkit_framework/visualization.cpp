@@ -4,13 +4,11 @@
 #include "mainwindow.h"
 
 #include <QDebug>
-#include <QVector3D>
 
 #include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
-#include <vector>
 
 Visualization::Visualization(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -53,7 +51,7 @@ void Visualization::initializeGL()
     if (m_debugLogger.initialize())
     {
         qDebug() << ":: Logging initialized";
-        m_debugLogger.startLogging( QOpenGLDebugLogger::SynchronousLogging );
+        m_debugLogger.startLogging(QOpenGLDebugLogger::SynchronousLogging);
         m_debugLogger.enableMessages();
     }
 
@@ -82,18 +80,19 @@ void Visualization::initializeGL()
 
 void Visualization::paintGL()
 {
-    glBindVertexArray(0U);
-
-    // Clear the screen before rendering
-    glClear(GL_COLOR_BUFFER_BIT);
-
     // The height plot, LIC and volume rendering must be drawn by themselves.
     // The scalar data, isolines and vector data drawing can be combined.
     if (m_drawHeightplot)
     {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         opengl_drawHeightplot();
         return;
     }
+
+    // The height plot requires clearing the color buffer *and* depth buffer.
+    // The other visualizations only require clearing the color buffer.
+    glClear(GL_COLOR_BUFFER_BIT);
 
     if (m_drawLIC)
     {
@@ -134,6 +133,11 @@ void Visualization::resizeGL(int const width, int const height)
 
     opengl_updateScalarPoints();
 
+    float const windowRatio = static_cast<float>(width) / static_cast<float>(height);
+    m_projectionTransformationMatrix.setToIdentity();
+    m_projectionTransformationMatrix.perspective(60.0F, windowRatio, 0.2F, 100.0F);
+    m_projectionTransformationMatrix.lookAt({0.0F, 0.0F, 0.0F}, {0.0F, 0.0F, -1.0F}, {0.0F, 1.0F, 0.0F});
+
     // The OpenGL widget has a total size of width()/height() and a border of m_cellWidth/m_cellHeight pixels.
     // The LIC texture should not include the border.
     // Use int instead of size_t to prevent some type conversions.
@@ -167,7 +171,7 @@ void Visualization::drawGlyphs()
 
     // Scale the magnitudes to where these become visible.
     std::transform(vectorMagnitude.begin(), vectorMagnitude.end(), vectorMagnitude.begin(),
-                   std::bind(std::multiplies<>(), std::placeholders::_1, m_vectorDataMagnifier));
+                   [this] (auto const e) { return m_vectorDataMagnifier * e; } );
 
     if (m_sendMinMaxToUI && !vectorMagnitude.empty())
     {
@@ -429,53 +433,56 @@ std::vector<QVector3D> Visualization::computeNormals(std::vector<float> heights)
     return std::vector<QVector3D>(heights.size(), QVector3D(0.0F, 0.0F, 1.0F));
 }
 
-static QVector4D transferFunction(float value)
+namespace
 {
-    // Define colors for the colormap
-    QVector3D const colorNode0{0.0F, 0.0F, 1.0F}; // blue
-    // QVector3D const colorNode1{1.0F, 1.0F, 1.0F}; // white
-     QVector3D const colorNode1{0.0F, 1.0F, 0.0F}; // green
-    QVector3D const colorNode2{1.0F, 0.0F, 0.0F}; // red
-
-    value /= 255.0F; // to range [0...1]
-
-    float alpha = value * 0.5F; // value;
-    if (value < 0.2F)
-        alpha = 0.5F; // 0.0F;
-
-    QVector3D color0 = colorNode0;
-    QVector3D color1 = colorNode1;
-
-    float t = 0.0F;
-    if (value < 0.5F)
+    QVector4D transferFunction(float value)
     {
-        t = 2.0F * value;
+        // Define colors for the colormap
+        QVector3D const colorNode0{0.0F, 0.0F, 1.0F}; // blue
+        // QVector3D const colorNode1{1.0F, 1.0F, 1.0F}; // white
+        QVector3D const colorNode1{0.0F, 1.0F, 0.0F}; // green
+        QVector3D const colorNode2{1.0F, 0.0F, 0.0F}; // red
+
+        value /= 255.0F; // to range [0...1]
+
+        float alpha = value * 0.5F; // value;
+        if (value < 0.2F)
+            alpha = 0.5F; // 0.0F;
+
+        QVector3D color0 = colorNode0;
+        QVector3D color1 = colorNode1;
+
+        float t = 0.0F;
+        if (value < 0.5F)
+        {
+            t = 2.0F * value;
+        }
+        else
+        {
+            t = 2.0F * (value - 0.5F);
+            color0 = colorNode1;
+            color1 = colorNode2;
+        }
+
+        QVector4D color;
+
+        color[3] = alpha;
+
+        for (int idx = 0; idx < 3; ++idx) // rgb
+            color[idx] = color0[idx] * (1.0F - t) + color1[idx] * t;
+
+        return color;
     }
-    else
+
+    float opacityCorrection(float const alpha, float const sampleRatio)
     {
-        t = 2.0F * (value - 0.5F);
-        color0 = colorNode1;
-        color1 = colorNode2;
+         return 1.0F - std::pow(1.0F - alpha, sampleRatio);
     }
-
-    QVector4D color;
-
-    color[3U] = alpha;
-
-    for (size_t idx = 0U; idx < 3U; ++idx) // rgb
-        color[idx] = color0[idx] * (1.0F - t) + color1[idx] * t;
-
-    return color;
-}
-
-static float opacityCorrection(float const alpha, float const sampleRatio)
-{
-     return 1.0F - std::pow(1.0F - alpha, sampleRatio);
 }
 
 std::vector<QVector4D> Visualization::computePreIntegrationLookupTable(size_t const DIM) const
 {
-    float const L = 100.0F; // total number of steps from 0 to delta-t
+    unsigned int const L = 100U; // total number of steps from 0 to delta-t
 
     // TODO: modify the transferFunction and add necessary functions
 
@@ -523,5 +530,5 @@ void Visualization::setNumberOfGlyphsY(size_t const numberOfGlyphsY)
 void Visualization::setLicStepSize(float const stepSizeFactor)
 {
     // Assuming width == height
-    m_licStepSize = stepSizeFactor * (1.0F / m_licTextureWidth);
+    m_licStepSize = stepSizeFactor * (1.0F / static_cast<float>(m_licTextureWidth));
 }

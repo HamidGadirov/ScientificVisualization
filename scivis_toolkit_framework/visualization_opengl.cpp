@@ -3,7 +3,6 @@
 #include "mainwindow.h"
 
 #include <QVector2D>
-#include <QVector3D>
 #include <QVector4D>
 
 #include <cmath>
@@ -25,8 +24,7 @@ void Visualization::opengl_generateObjects()
     glGenTextures(1, &m_vectorDataTextureLocation);
 
     glGenVertexArrays(1, &m_vaoIsolines);
-    glGenBuffers(1, &m_vboIsolines);
-    glGenTextures(1, &m_isolinesTextureLocation);
+    glGenBuffers(1, &m_eboIsolines);
 
     glGenVertexArrays(1, &m_vaoHeightplot);
     glGenBuffers(1, &m_vboHeightplotPoints);
@@ -87,7 +85,7 @@ void Visualization::opengl_deleteObjects()
     glDeleteBuffers(1, &m_vboValuesGlyphs);
 
     glDeleteVertexArrays(1, &m_vaoIsolines);
-    glDeleteBuffers(1, &m_vboIsolines);
+    glDeleteBuffers(1, &m_eboIsolines);
 
     glDeleteVertexArrays(1, &m_vaoHeightplot);
     glDeleteBuffers(1, &m_vboHeightplotPoints);
@@ -183,15 +181,36 @@ void Visualization::opengl_setupScalarData()
 void Visualization::opengl_setupIsolines()
 {
     glBindVertexArray(m_vaoIsolines);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboIsolines);
+
+    // Reuse the scalar data points buffer, but with indices exclusive to isolines
+    glBindBuffer(GL_ARRAY_BUFFER, m_vboScalarPoints);
 
     // Set vertex coordinates to location 0
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QVector3D), reinterpret_cast<GLvoid*>(0));
+    glVertexAttribPointer(0U, 2, GL_FLOAT, GL_FALSE, 0U, reinterpret_cast<GLvoid*>(0));
 
-    // Set height to location 1
+    // Reuse the scalar data buffer.
+    glBindBuffer(GL_ARRAY_BUFFER, m_vboScalarData);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(QVector3D), reinterpret_cast<GLvoid*>(2U * sizeof(float)));
+    glVertexAttribPointer(1U, 1, GL_FLOAT, GL_FALSE, 0U, reinterpret_cast<GLvoid*>(0));
+
+    m_numberOfIsolinesIndices = 4U; // Placeholder value. Set this to the length of the index list.
+
+    std::vector<unsigned short> indices;
+    indices.reserve(m_numberOfIsolinesIndices);
+
+    // Replace the placeholder code below with code that, for each quad in the grid, computes its
+    // four indices and adds it to the indices vector.
+    indices.push_back(0U);
+    indices.push_back(m_DIM / 2U);
+    indices.push_back((m_DIM / 2U) + (m_DIM / 2U) * m_DIM);
+    indices.push_back(m_DIM * (m_DIM / 2U));
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboIsolines);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(indices.size() * sizeof(unsigned short)),
+                 indices.data(),
+                 GL_STATIC_DRAW);
 }
 
 void Visualization::opengl_setupGlyphs()
@@ -482,10 +501,14 @@ void Visualization::opengl_createShaderProgramColorMapInstanced()
 void Visualization::opengl_createShaderProgramIsolines()
 {
     m_shaderProgramIsolines.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/isolines.vert");
+    m_shaderProgramIsolines.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/isolines.geom");
     m_shaderProgramIsolines.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/isolines.frag");
     m_shaderProgramIsolines.link();
 
+    m_uniformLocationIsolines_useInterpolation = uniformLocationWithCheck(m_shaderProgramIsolines, "useInterpolation");
+    m_uniformLocationIsolines_ambiguousCaseMidpoint = uniformLocationWithCheck(m_shaderProgramIsolines, "ambiguousCaseMidpoint");
     m_uniformLocationIsolines_color = uniformLocationWithCheck(m_shaderProgramIsolines, "isolineColor");
+    m_uniformLocationIsolines_rho = uniformLocationWithCheck(m_shaderProgramIsolines, "rho");
 
     qDebug() << "m_shaderProgramIsolines initialized.";
 }
@@ -677,8 +700,8 @@ void Visualization::opengl_loadLicVelocityField(std::vector<float> const &veloci
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RG32F,
-                 m_DIM,
-                 m_DIM,
+                 static_cast<GLsizei>(m_DIM),
+                 static_cast<GLsizei>(m_DIM),
                  0,
                  GL_RG,
                  GL_FLOAT,
@@ -724,24 +747,24 @@ void Visualization::opengl_updateLicPoints()
     std::vector<QVector2D> licCoordsAndTexCoords;
     licCoordsAndTexCoords.reserve(8U);
 
-    float min = m_cellWidth - 1.0F;
-    float max = static_cast<float>(m_DIM) * m_cellWidth - 1.0F;
+    float const min = m_cellWidth - 1.0F;
+    float const max = static_cast<float>(m_DIM) * m_cellWidth - 1.0F;
 
     // Top left OpenGL coordinate.
-    licCoordsAndTexCoords.emplace_back(QVector2D{min, max});
-    licCoordsAndTexCoords.emplace_back(QVector2D{0.0F, 1.0F});
+    licCoordsAndTexCoords.emplace_back(min, max);
+    licCoordsAndTexCoords.emplace_back(0.0F, 1.0F);
 
     // Bottom left
-    licCoordsAndTexCoords.emplace_back(QVector2D{min, min});
-    licCoordsAndTexCoords.emplace_back(QVector2D{0.0F, 0.0F});
+    licCoordsAndTexCoords.emplace_back(min, min);
+    licCoordsAndTexCoords.emplace_back(0.0F, 0.0F);
 
     // Top right
-    licCoordsAndTexCoords.emplace_back(QVector2D{max, max});
-    licCoordsAndTexCoords.emplace_back(QVector2D{1.0F, 1.0F});
+    licCoordsAndTexCoords.emplace_back(max, max);
+    licCoordsAndTexCoords.emplace_back(1.0F, 1.0F);
 
     // Bottom right
-    licCoordsAndTexCoords.emplace_back(QVector2D{max, min});
-    licCoordsAndTexCoords.emplace_back(QVector2D{1.0F, 0.0F});
+    licCoordsAndTexCoords.emplace_back(max, min);
+    licCoordsAndTexCoords.emplace_back(1.0F, 0.0F);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vboLic);
     glBufferSubData(GL_ARRAY_BUFFER,
@@ -761,7 +784,7 @@ void Visualization::opengl_drawScalarData(std::vector<float> const &scalarValues
                 m_shaderProgramScalarDataScaleCustomColorMap.bind();
 
                 auto const currentMinMaxIt = std::minmax_element(scalarValues.cbegin(), scalarValues.cend());
-                QVector2D currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
+                QVector2D const currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
 
                 m_minMaxDensity.update(currentMinMax);
                 QVector2D const minMaxRange{m_minMaxDensity.range()};
@@ -787,7 +810,7 @@ void Visualization::opengl_drawScalarData(std::vector<float> const &scalarValues
                 m_shaderProgramScalarDataScaleTexture.bind();
 
                 auto const currentMinMaxIt = std::minmax_element(scalarValues.cbegin(), scalarValues.cend());
-                QVector2D currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
+                QVector2D const currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
 
                 m_minMaxDensity.update(currentMinMax);
                 QVector2D const minMaxRange{m_minMaxDensity.range()};
@@ -876,7 +899,6 @@ void Visualization::opengl_drawScalarData(std::vector<float> const &scalarValues
 
 void Visualization::opengl_drawIsolines()
 {
-
     float const stepsize = [&]()
     {
         if (m_numberOfIsolines > 1)
@@ -889,42 +911,51 @@ void Visualization::opengl_drawIsolines()
 
     switch (m_manuallyChooseIsolineDataType ? m_currentIsolineDataType : m_currentScalarDataType)
     {
-        case ScalarDataType::Density: scalarValues = m_simulation.density(); break;
-        case ScalarDataType::ForceFieldMagnitude: scalarValues = m_simulation.forceFieldMagnitude(); break;
-        case ScalarDataType::VelocityMagnitude: scalarValues = m_simulation.velocityMagnitude(); break;
-        case ScalarDataType::VelocityDivergence: scalarValues = velocityDivergence(); break;
-        case ScalarDataType::ForceFieldDivergence: scalarValues = forceFieldDivergence(); break;
+    case ScalarDataType::Density: scalarValues = m_simulation.density(); break;
+    case ScalarDataType::ForceFieldMagnitude: scalarValues = m_simulation.forceFieldMagnitude(); break;
+    case ScalarDataType::VelocityMagnitude: scalarValues = m_simulation.velocityMagnitude(); break;
+    case ScalarDataType::VelocityDivergence: scalarValues = velocityDivergence(); break;
+    case ScalarDataType::ForceFieldDivergence: scalarValues = forceFieldDivergence(); break;
     }
 
+    std::vector<Color> const colorMap = Texture::createTurboTexture(m_numberOfIsolines);
     for (size_t n = 0U; n < m_numberOfIsolines; ++n)
     {
         float const currentIsolineValue = m_isolineMinValue + (n * stepsize);
-        std::vector<QVector2D> const vertices{Isoline(scalarValues,
-                                                      m_DIM,
-                                                      currentIsolineValue,
-                                                      m_cellWidth,
-                                                      m_isolineInterpolationMethod,
-                                                      m_isolineAmbiguousCaseDecider).vertices()};
 
-        std::vector<QVector3D> isolineVertices;
-        isolineVertices.reserve(vertices.size());
-        for (auto const &v : vertices)
+        m_shaderProgramIsolines.bind();
+        switch (m_isolinesInterpolationMethod)
         {
-            // Transfer to a 3D vector. Offset by -1 to go to device coordinates.
-            isolineVertices.emplace_back(v - QVector2D{1.0F, 1.0F}, 0.0F);
+        case IsolinesInterpolationMethod::Linear:
+            glUniform1i(m_uniformLocationIsolines_useInterpolation, GL_TRUE);
+            break;
+
+        case IsolinesInterpolationMethod::None:
+            glUniform1i(m_uniformLocationIsolines_useInterpolation, GL_FALSE);
+            break;
         }
+
+        switch (m_isolinesAmbiguousCaseDecider)
+        {
+        case IsolinesAmbiguousCaseDecider::Midpoint:
+            glUniform1i(m_uniformLocationIsolines_ambiguousCaseMidpoint, GL_TRUE);
+            break;
+
+        case IsolinesAmbiguousCaseDecider::Asymptotic:
+            glUniform1i(m_uniformLocationIsolines_ambiguousCaseMidpoint, GL_FALSE);
+            break;
+        }
+
+        glUniform1f(m_uniformLocationIsolines_rho, currentIsolineValue);
+
+        if (m_numberOfIsolines == 1U)
+            glUniform3fv(m_uniformLocationIsolines_color, 1, &m_isolineColor[0]);
+        else
+            glUniform3f(m_uniformLocationIsolines_color, colorMap[n].r, colorMap[n].g, colorMap[n].b);
 
         glBindVertexArray(m_vaoIsolines);
 
-
-        // Buffer data and draw lines
-        glBindBuffer(GL_ARRAY_BUFFER, m_vboIsolines);
-        glBufferData(GL_ARRAY_BUFFER,
-                     static_cast<GLsizeiptr>(isolineVertices.size() * sizeof(QVector3D)),
-                     isolineVertices.data(),
-                     GL_DYNAMIC_DRAW);
-
-        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(isolineVertices.size()));
+        glDrawElements(GL_LINES_ADJACENCY, m_numberOfIsolinesIndices, GL_UNSIGNED_SHORT, static_cast<GLvoid*>(nullptr));
     }
 }
 
@@ -964,7 +995,7 @@ void Visualization::opengl_drawHeightplot()
             glUniform3fv(m_uniformLocationHeightplotScale_light, 1, &m_lightPosition[0]);
 
             auto const currentMinMaxIt = std::minmax_element(scalarValues.cbegin(), scalarValues.cend());
-            QVector2D currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
+            QVector2D const currentMinMax{*currentMinMaxIt.first, *currentMinMaxIt.second};
 
             m_minMaxDensity.update(currentMinMax);
             QVector2D const minMaxRange{m_minMaxDensity.range()};
@@ -1102,7 +1133,7 @@ void Visualization::opengl_updateTexture()
 
 void Visualization::opengl_updatePreIntegrationLookupTable()
 {
-    size_t const DIM = 32U; //256U; //64U;
+    int const DIM = 32; //256; //64;
 
     std::vector<QVector4D> const lookupTable = computePreIntegrationLookupTable(DIM);
 
@@ -1334,7 +1365,7 @@ void Visualization::opengl_drawVolumeRendering()
     // If the visualization is *not* paused, then we use the current amount of elapsed time.
     // Otherwise, this step is skipped and we use the time stamp value that was last set.
     if (!m_volumeRenderingTimeIsPaused)
-        m_volumeRenderingPauseTimestamp = m_elapsedTimer.elapsed() / 1000.0F;
+        m_volumeRenderingPauseTimestamp = static_cast<float>(m_elapsedTimer.elapsed()) / 1000.0F;
 
     switch (m_volumeRenderFragShader)
     {
@@ -1386,7 +1417,12 @@ void Visualization::opengl_drawVolumeRendering()
 void Visualization::opengl_rotateView()
 {
     m_viewTransformationMatrix.setToIdentity();
+
+    m_viewTransformationMatrix.translate(0.0F, 0.0F, -2.0F);
+
     m_viewTransformationMatrix.rotate(m_rotation.x(), 1.0F, 0.0F, 0.0F);
     m_viewTransformationMatrix.rotate(m_rotation.y(), 0.0F, 1.0F, 0.0F);
     m_viewTransformationMatrix.rotate(m_rotation.z(), 0.0F, 0.0F, 1.0F);
+
+    m_normalTransformationMatrix = m_viewTransformationMatrix.normalMatrix();
 }

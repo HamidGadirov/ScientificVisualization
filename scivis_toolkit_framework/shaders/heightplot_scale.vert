@@ -26,7 +26,7 @@ uniform vec3 lightPosition;
 
 void main()
 {
-    gl_Position = viewTransform * projectionTransform * vec4(vertCoordinates_in, height, 1.0F);
+    gl_Position = projectionTransform * viewTransform * vec4(vertCoordinates_in, height, 1.0F);
 
     // Placeholder values
     value = rangeMin + rangeMax;

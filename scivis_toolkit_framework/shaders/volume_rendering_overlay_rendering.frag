@@ -9,7 +9,7 @@ uniform sampler3D textureSampler;
 
 out vec4 color;
 
-// The Turbo color map for the time steps, interpolated to 8 colors.
+// Color map for the time steps
 const vec3 colorTimeStep0 = vec3(0.19483F, 0.08339F, 0.26149F);
 const vec3 colorTimeStep1 = vec3(0.276877F, 0.467233F, 0.938261F);
 const vec3 colorTimeStep2 = vec3(0.111057F, 0.80685F, 0.843763F);
@@ -18,15 +18,14 @@ const vec3 colorTimeStep4 = vec3(0.816737F, 0.916873F, 0.205837F);
 const vec3 colorTimeStep5 = vec3(0.99648F, 0.600076F, 0.174426F);
 const vec3 colorTimeStep6 = vec3(0.857794F, 0.226128F, 0.0279014F);
 const vec3 colorTimeStep7 = vec3(0.49321F, 0.0196299F, 0.00955002F);
-
 const vec3 colorsTimeStep[8] = vec3[8](colorTimeStep0, colorTimeStep1, colorTimeStep2, colorTimeStep3, colorTimeStep4, colorTimeStep5, colorTimeStep6, colorTimeStep7);
 
 // bounding box
-const vec3 bbMin = vec3(-0.5F, -0.5F, -0.5F);
-const vec3 bbMax = vec3(0.5F, 0.5F, 0.5F);
+const vec3 bbMin = vec3(-0.5F);
+const vec3 bbMax = vec3(0.5F);
 
 // additional camera parameters
-const float fovy = 45.0F;
+const float fovy = 58.0F * (3.14159267F / 180.0F); // degrees converted to radians
 const float zNear = 0.1F;
 
 // light direction
@@ -45,28 +44,16 @@ const int sampleNum = 150;
 // width of one voxel
 const float voxelWidth = 1.0F / 64.0F;
 
-// epsilon for comparisons
-const float EPS = 0.000001F;
-const float PI = 3.14159267F;
-const float period = 2.0F;
-// sigma for the gaussian function
-const float sig = 0.4F;
-
 // Colors for the colormap
 const vec3 colorNode0 = vec3(0.0F, 0.0F, 1.0F);  // blue
 //const vec3 colorNode1 = vec3(1.0F, 1.0F, 1.0F);  // white
 const vec3 colorNode1 = vec3(0.0F, 1.0F, 0.0F);  // green
 const vec3 colorNode2 = vec3(1.0F, 0.0F, 0.0F);  // red
 
-vec2 csqr(vec2 a)
-{
-    return vec2((a.x * a.x) - (a.y * a.y), 2.0F * a.x * a.y);
-}
-
 /**
  *	Samples the volume texture at a given position.
  *
- *	@param volumeCoord The position one wants to retrieve the sample of (in world coordinates).
+ *	@param texCoord The position one wants to retrieve the sample of (in world coordinates).
  *	@return The sample value at the given position.
  */
 float sampleVolume(vec3 texCoord)
@@ -93,9 +80,9 @@ vec4 transferFunction(float value)
  *
  * 	@param rayOrig The origin of the ray
  * 	@param rayDir The direction of the ray
- *  @param tNear OUT: The distance from the ray origin to the first intersection point
- *	@param tFar OUT: The distance from the ray origin to the second intersection point
- *	@return True if the ray intersects the bounding box, false otherwise.
+ *  @param tNear OUT The distance from the ray origin to the first intersection point
+ *  @param tFar OUT The distance from the ray origin to the second intersection point
+ *  @return True if the ray intersects the bounding box, false otherwise.
  */
 bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float tFar)
 {
@@ -118,11 +105,11 @@ bool intersectBoundingBox(vec3 rayOrig, vec3 rayDir, out float tNear, out float 
 /**
  *	Correct opacity for the current sampling rate
  *
- *	@param alpha: input opacity.
- *	@param samplingRatio: the ratio between current sampling rate and the original.
+ *	@param alpha The input opacity.
+ *	@param samplingRatio The ratio between current sampling rate and the original one.
 
  */
-float opacityCorrection(in float alpha, in float samplingRatio)
+float opacityCorrection(float alpha, float samplingRatio)
 {
     float a_corrected = 1.0F - pow(1.0F - alpha, samplingRatio);
     return a_corrected;
@@ -131,9 +118,9 @@ float opacityCorrection(in float alpha, in float samplingRatio)
 /**
  * Accumulation composition
  *
- * @param sample: current sample value.
- * @param samplingRatio: the ratio between current sampling rate and the original. (ray step)
- * @param composedColor: blended color (both input and output)
+ * @param value The current sample value.
+ * @param opacityCorrectionFactor The ratio between current sampling rate and the original one.
+ * @param composedColor The blended color (both input and output).
  */
 void accumulation(float value, float opacityCorrectionFactor, inout vec4 composedColor)
 {
@@ -147,7 +134,7 @@ void accumulation(float value, float opacityCorrectionFactor, inout vec4 compose
 /**
  * Main Function: Computes the color for the given fragment.
  *
- * @param fragColor OUT: The color of the pixel / fragment.
+ * @param fragColor OUT The color of the pixel / fragment.
  */
 void mainImage(out vec4 fragColor)
 {
@@ -201,7 +188,7 @@ void mainImage(out vec4 fragColor)
     {
         vec3 pos = camPos + t * rayDir;
         // Use normalized volume coordinate
-        vec3 texCoord = vec3(pos.x + 0.5F, pos.y + 0.5F, pos.z + 0.5F);
+        vec3 texCoord = pos + 0.5F;
         float value = sampleVolume(texCoord);
 
         accumulation(value, opacityCorrectionFactor, finalColor);

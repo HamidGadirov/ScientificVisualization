@@ -1,15 +1,11 @@
 #include "lic.h"
 
-#include <QDebug>
-
 Lic::Lic()
 {
     // Setup and seed the random number generator
     std::random_device rd;
     m_generator = std::mt19937(rd());
     m_distribution = std::uniform_real_distribution<float>{0.0F, 1.0F};
-
-    qDebug() << "LIC Constructed";
 }
 
 std::vector<float> Lic::noiseTexture(int const dimX, int const dimY)

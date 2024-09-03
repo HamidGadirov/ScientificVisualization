@@ -3,21 +3,16 @@
 
 #include "color.h"
 
-#include <QOpenGLWidget>
 #include <QOpenGLDebugLogger>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLWidget>
+
+#include <vector>
 
 class Legend : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
-
-    struct Vertex
-    {
-        float x;
-        float y;
-        float value;
-    };
 
     QOpenGLDebugLogger m_debugLogger;
 
@@ -34,16 +29,20 @@ class Legend : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void loadInitialColorMap();
 
 protected:
-    void initializeGL();
-    void resizeGL(int const newWidth, int const newHeight);
-    void paintGL();
+    void initializeGL() override;
+    void resizeGL(int const newWidth, int const newHeight) override;
+    void paintGL() override;
 
 private slots:
     void onMessageLogged(QOpenGLDebugMessage const &Message) const;
 
 public:
     Legend(QWidget *parent = nullptr);
-    ~Legend();
+    Legend(Legend const&) = delete;
+    Legend& operator=(Legend const&) = delete;
+    Legend(Legend&&) = delete;
+    Legend& operator=(Legend&&) = delete;
+    ~Legend() override;
 
     void updateColorMap(std::vector<Color> const &colorMap);
 };

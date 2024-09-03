@@ -49,7 +49,7 @@ void MainWindow::on_scalarDataColorMapComboBox_currentIndexChanged(int index)
         break;
 
         case 1:
-            m_scalarDataColorMap = ColorMap::Rainbow;
+            m_scalarDataColorMap = ColorMap::Turbo;
             ui->scalarDataColorMapNumberOfColorsSlider->setDisabled(false);
             ui->scalarDataColorMapNumberOfColorsSpinBox->setDisabled(false);
         break;
@@ -85,7 +85,7 @@ void MainWindow::on_scalarDataColorMapNumberOfColorsSpinBox_valueChanged(int val
 
 void MainWindow::on_scalarDataCustomColorPickerPushButton_clicked()
 {
-    size_t const colorIdx = static_cast<size_t>(ui->scalarDataCustomColorSpinBox->value());
+    auto const colorIdx = static_cast<size_t>(ui->scalarDataCustomColorSpinBox->value());
     Q_ASSERT(colorIdx <= 2U);
 
     auto const selectedColorPtr = &findChildSafe<Visualization*>("visualizationOpenGLWidget")->m_customColors[colorIdx];
@@ -142,7 +142,7 @@ void MainWindow::on_scalarDataMappingClampingMinDoubleSpinBox_valueChanged(doubl
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_clampMin = static_cast<float>(arg1);
 
-    ui->scalarDataMappingClampingMinSlider->setValue(arg1 * 100.0);
+    ui->scalarDataMappingClampingMinSlider->setValue(static_cast<int>(arg1 * 100.0));
 }
 
 void MainWindow::on_scalarDataMappingClampingMaxSlider_valueChanged(int value)
@@ -155,7 +155,7 @@ void MainWindow::on_scalarDataMappingClampingMaxDoubleSpinBox_valueChanged(doubl
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_clampMax = static_cast<float>(arg1);
 
-    ui->scalarDataMappingClampingMaxSlider->setValue(arg1 * 100.0);
+    ui->scalarDataMappingClampingMaxSlider->setValue(static_cast<int>(arg1 * 100.0));
 }
 
 void MainWindow::on_scalarDataMappingTransferKSlider_valueChanged(int value)
@@ -168,5 +168,5 @@ void MainWindow::on_scalarDataMappingTransferKSpinBox_valueChanged(double value)
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_transferK = static_cast<float>(value);
 
-    ui->scalarDataMappingTransferKSlider->setValue(value * 100.0);
+    ui->scalarDataMappingTransferKSlider->setValue(static_cast<int>(value * 100.0));
 }

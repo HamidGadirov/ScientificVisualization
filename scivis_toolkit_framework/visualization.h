@@ -5,22 +5,24 @@
 #include "datatype.h"
 #include "datraw.h"
 #include "glyph.h"
-#include "isoline.h"
+#include "lic.h"
 #include "movingrange.h"
 #include "simulation.h"
-#include "lic.h"
 
 #include <QElapsedTimer>
-#include <QOpenGLWidget>
-#include <QTimer>
+#include <QVector3D>
+#include <QMatrix3x3>
 #include <QOpenGLDebugLogger>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLWidget>
+#include <QTimer>
 
 #include <array>
+#include <cstddef>
 #include <deque>
 #include <string>
-#include <utility>
+#include <vector>
 
 class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
@@ -45,6 +47,18 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
         x,
         y,
         t
+    };
+
+    enum class IsolinesAmbiguousCaseDecider
+    {
+        Midpoint,
+        Asymptotic
+    };
+
+    enum class IsolinesInterpolationMethod
+    {
+        Linear,
+        None
     };
 
     enum class VolumeRenderTexture
@@ -113,11 +127,12 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     ScalarDataType m_currentIsolineDataType = ScalarDataType::Density;
     bool m_manuallyChooseIsolineDataType = false;
     size_t m_numberOfIsolines = 1U;
-    Isoline::InterpolationMethod m_isolineInterpolationMethod = Isoline::InterpolationMethod::Linear;
-    Isoline::AmbiguousCaseDecider m_isolineAmbiguousCaseDecider = Isoline::AmbiguousCaseDecider::Midpoint;
+    IsolinesInterpolationMethod m_isolinesInterpolationMethod = IsolinesInterpolationMethod::Linear;
+    IsolinesAmbiguousCaseDecider m_isolinesAmbiguousCaseDecider = IsolinesAmbiguousCaseDecider::Midpoint;
     float m_isolineMinValue = 0.5F;
     float m_isolineMaxValue = 0.5F;
     QVector3D m_isolineColor{1.0F, 1.0F, 1.0F};
+    size_t m_numberOfIsolinesIndices;
 
     // Height plot info
     ScalarDataType m_currentHeightplotDataType = ScalarDataType::Density;
@@ -139,11 +154,11 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     std::vector<std::uint8_t> m_volumeRenderTextureData;
 
     // Functions
-    std::vector<float> velocityDivergence() const;
-    std::vector<float> forceFieldDivergence() const;
+    [[nodiscard]] std::vector<float> velocityDivergence() const;
+    [[nodiscard]] std::vector<float> forceFieldDivergence() const;
 
-    std::vector<QVector3D> computeNormals(std::vector<float> height) const;
-    std::vector<QVector4D> computePreIntegrationLookupTable(size_t const DIM) const;
+    [[nodiscard]] std::vector<QVector3D> computeNormals(std::vector<float> height) const;
+    [[nodiscard]] std::vector<QVector4D> computePreIntegrationLookupTable(size_t const DIM) const;
 
     void input_drag(int const mx, int my);
 
@@ -160,8 +175,7 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLuint m_vboValuesGlyphs;
 
     GLuint m_vaoIsolines;
-    GLuint m_vboIsolines;
-    GLuint m_isolinesTextureLocation;
+    GLuint m_eboIsolines;
 
     GLuint m_vaoHeightplot;
     GLuint m_vboHeightplotPoints;
@@ -216,7 +230,10 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 
     GLint m_uniformLocationTextureColorMapInstanced;
 
+    GLint m_uniformLocationIsolines_useInterpolation;
+    GLint m_uniformLocationIsolines_ambiguousCaseMidpoint;
     GLint m_uniformLocationIsolines_color;
+    GLint m_uniformLocationIsolines_rho;
 
     GLint m_uniformLocationHeightplotScale_rangeMin;
     GLint m_uniformLocationHeightplotScale_rangeMax;
@@ -267,8 +284,10 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     QMatrix4x4 m_viewTransformationMatrix;
     QMatrix3x3 m_normalTransformationMatrix;
 
-    QVector4D m_materialConstants{0.5F, 0.5F, 1.0F, 5.0F};
-    QVector3D m_lightPosition{300.0F, 300.0F, 200.0F};
+    QVector4D m_materialConstants{0.5F, 0.5F, 0.5F, 8.0F};
+    // QVector3D m_lightPosition{10.0F, 0.5F, 0.0F};
+    QVector3D m_lightPosition{0.0F, 0.0F, 10.0F};
+    // QVector3D m_lightPosition{10.0F, 0.0F, 10.0F};
 
     MovingRange m_minMaxDensity{1U, {0.0F, 0.0F}};
 
@@ -292,7 +311,6 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     size_t const m_slicingWindowSize = m_DIM;
     SlicingDirection m_slicingDirection = SlicingDirection::x;
     size_t m_sliceIdx = 0U;
-    std::deque<std::vector<float>> m_scalarValuesWindow{m_slicingWindowSize, std::vector<float>(m_DIM * m_DIM, 0.0F)};
 
     void applySlicing(std::vector<float> &scalarValues);
 
@@ -357,11 +375,11 @@ class Visualization : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void opengl_drawVolumeRendering();
 
 protected:
-    void initializeGL();
-    void resizeGL(int const newWidth, int const newHeight);
-    void paintGL();
+    void initializeGL() override;
+    void resizeGL(int const newWidth, int const newHeight) override;
+    void paintGL() override;
 
-    void mouseMoveEvent(QMouseEvent *ev);
+    void mouseMoveEvent(QMouseEvent *ev) override;
 
 private slots:
     void onMessageLogged(QOpenGLDebugMessage const &Message) const;
@@ -371,7 +389,11 @@ public slots:
 
 public:
     Visualization(QWidget *parent = nullptr);
-    ~Visualization();
+    Visualization(Visualization const&) = delete;
+    Visualization& operator=(Visualization const&) = delete;
+    Visualization(Visualization&&) = delete;
+    Visualization& operator=(Visualization&&) = delete;
+    ~Visualization() override;
 
     // Setters
     void setDIM(size_t const DIM);

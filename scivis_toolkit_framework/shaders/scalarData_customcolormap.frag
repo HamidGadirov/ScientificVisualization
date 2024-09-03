@@ -9,7 +9,7 @@ out vec4 color;
 
 void main()
 {
-    // As a place holder, always choose the color with index 0.
+    // As a placeholder, always choose the color with index 0.
     vec3 colorFromColorMap = colorMapColors[0] * value; // Remove this placeholder value
 
     color = vec4(colorFromColorMap, 1.0F);

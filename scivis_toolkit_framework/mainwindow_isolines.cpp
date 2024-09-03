@@ -54,7 +54,7 @@ void MainWindow::on_isolinesRangeRhoMinSpinBox_valueChanged(double value)
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_isolineMinValue = static_cast<float>(value);
 
-    ui->isolinesRangeRhoMinSlider->setValue(value * 10.0);
+    ui->isolinesRangeRhoMinSlider->setValue(static_cast<int>(value * 10.0));
 }
 
 void MainWindow::on_isolinesRangeRhoMaxSpinBox_valueChanged(double value)
@@ -62,7 +62,7 @@ void MainWindow::on_isolinesRangeRhoMaxSpinBox_valueChanged(double value)
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->m_isolineMaxValue = static_cast<float>(value);
 
-    ui->isolinesRangeRhoMaxSlider->setValue(value * 10.0);
+    ui->isolinesRangeRhoMaxSlider->setValue(static_cast<int>(value * 10.0));
 }
 
 void MainWindow::on_isolinesRangeRhoMinSlider_valueChanged(int value)
@@ -80,7 +80,7 @@ void MainWindow::on_isolinesInterpolationMethodLinearRadioButton_toggled(bool ch
     if (checked)
     {
         auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
-        visualizationPtr->m_isolineInterpolationMethod = Isoline::InterpolationMethod::Linear;
+        visualizationPtr->m_isolinesInterpolationMethod = Visualization::IsolinesInterpolationMethod::Linear;
     }
 }
 
@@ -89,7 +89,7 @@ void MainWindow::on_isolinesInterpolationMethodNoneRadioButton_toggled(bool chec
     if (checked)
     {
         auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
-        visualizationPtr->m_isolineInterpolationMethod = Isoline::InterpolationMethod::None;
+        visualizationPtr->m_isolinesInterpolationMethod = Visualization::IsolinesInterpolationMethod::None;
     }
 }
 
@@ -98,7 +98,7 @@ void MainWindow::on_isolinesAmbiguousCaseDeciderMidpointRadioButton_toggled(bool
     if (checked)
     {
         auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
-        visualizationPtr->m_isolineAmbiguousCaseDecider = Isoline::AmbiguousCaseDecider::Midpoint;
+        visualizationPtr->m_isolinesAmbiguousCaseDecider = Visualization::IsolinesAmbiguousCaseDecider::Midpoint;
     }
 }
 
@@ -107,6 +107,6 @@ void MainWindow::on_isolinesAmbiguousCaseDeciderAsymptoticRadioButton_toggled(bo
     if (checked)
     {
         auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
-        visualizationPtr->m_isolineAmbiguousCaseDecider = Isoline::AmbiguousCaseDecider::Asymptotic;
+        visualizationPtr->m_isolinesAmbiguousCaseDecider = Visualization::IsolinesAmbiguousCaseDecider::Asymptotic;
     }
 }

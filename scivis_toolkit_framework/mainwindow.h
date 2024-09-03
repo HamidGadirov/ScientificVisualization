@@ -20,7 +20,11 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    MainWindow(MainWindow const&) = delete;
+    MainWindow& operator=(MainWindow const&) = delete;
+    MainWindow(MainWindow&&) = delete;
+    MainWindow& operator=(MainWindow&&) = delete;
+    ~MainWindow() override;
 
 private slots:
     // Simulation, show minimum/maximum values of scalar and vector data.
@@ -140,22 +144,33 @@ private slots:
     void on_isolinesRangeRhoMaxSlider_valueChanged(int value);
 
 
-    // Heightplot, draw on/off.
-    void on_showHeightplotCheckBox_toggled(bool checked);
+    // Height plot, draw on/off.
+    void on_showHeightPlotCheckBox_toggled(bool checked);
 
-    // Heightplot, scalar data type used for height.
+    // Height plot, scalar data type used for height.
     void on_heightplotDataTypeComboBox_currentIndexChanged(int index);
 
-    // Heightplot, rotate view along X-axis.
+    // Height plot, material constants used in Phong illumination.
+    void on_heightPlotMaterialConstantsKADoubleSpinBox_valueChanged(double arg1);
+    void on_heightPlotMaterialConstantsKDDoubleSpinBox_valueChanged(double arg1);
+    void on_heightPlotMaterialConstantsKSDoubleSpinBox_valueChanged(double arg1);
+    void on_heightPlotMaterialConstantsAlphaDoubleSpinBox_valueChanged(double arg1);
+
+    // Height plot, light position.
+    void on_heightPlotLightPositionXDoubleSpinBox_valueChanged(double arg1);
+    void on_heightPlotLightPositionYDoubleSpinBox_valueChanged(double arg1);
+    void on_heightPlotLightPositionZDoubleSpinBox_valueChanged(double arg1);
+
+    // Height plot, rotate view along X-axis.
     void on_heightplotViewRotateX_valueChanged(int value);
 
-    // Heightplot, rotate view along Y-axis.
+    // Height plot, rotate view along Y-axis.
     void on_heightplotViewRotateY_valueChanged(int value);
 
-    // Heightplot, rotate view along Z-axis.
+    // Height plot, rotate view along Z-axis.
     void on_heightplotViewRotateZ_valueChanged(int value);
 
-    // Heightplot, reset rotation.
+    // Height plot, reset rotation.
     void on_heightplotResetRotation_clicked();
 
     // LIC, draw on/off.
@@ -196,7 +211,7 @@ private:
     size_t m_numberOfColorsVectorData = 256U;
     std::vector<Color> m_defaultVectorDataColorMap = Texture::createGrayscaleTexture(m_numberOfColorsScalarData);
 
-    std::vector<Color> enumToColorMap(ColorMap const colorMap, size_t numberOfColors) const;
+    [[nodiscard]] std::vector<Color> enumToColorMap(ColorMap const colorMap, size_t numberOfColors) const;
     void updateScalarDataColorMapGlobally() const;
     void updateVectorDataColorMapGlobally() const;
 

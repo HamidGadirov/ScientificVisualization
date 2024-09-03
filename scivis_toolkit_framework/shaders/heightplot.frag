@@ -11,7 +11,7 @@ out vec4 color;
 
 void main()
 {
-  vec3 gray = vec3(0.3F, 0.3F, 0.3F);
+    const vec3 gray = vec3(0.3F, 0.3F, 0.3F);
 
     // TODO:
     // - Use the height value to obtain the correct color from the color map.

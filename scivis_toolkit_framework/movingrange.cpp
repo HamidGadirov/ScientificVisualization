@@ -1,5 +1,7 @@
 #include "movingrange.h"
 
+#include <algorithm>
+
 MovingRange::MovingRange(size_t const windowSize, QVector2D const initialValue)
 :
     m_windowSize(windowSize),
@@ -42,13 +44,13 @@ void MovingRange::update(QVector2D const newValue)
     std::queue<QVector2D> tempQueue{m_window};
     while (!tempQueue.empty())
     {
-        QVector2D val =  tempQueue.front();
-        min = qMin(min, val.x());
-        max = qMax(max, val.y());
+        QVector2D const val =  tempQueue.front();
+        min = std::min(min, val.x());
+        max = std::max(max, val.y());
         tempQueue.pop();
     }
 
-    m_range = QVector2D(min, max);
+    m_range = QVector2D{min, max};
 }
 
 QVector2D MovingRange::range() const

@@ -4,8 +4,7 @@
 
 #include <QDebug>
 
-#include <algorithm>
-#include <cmath>
+#include <array>
 
 Legend::Legend(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -35,7 +34,7 @@ void Legend::initializeGL() {
     if (m_debugLogger.initialize())
     {
         qDebug() << ":: Logging initialized";
-        m_debugLogger.startLogging( QOpenGLDebugLogger::SynchronousLogging );
+        m_debugLogger.startLogging(QOpenGLDebugLogger::SynchronousLogging);
         m_debugLogger.enableMessages();
     }
 
@@ -58,6 +57,13 @@ void Legend::initializeGL() {
     glBindVertexArray(m_vao);
 
     // The legend is a rectangle, drawn as two triangles.
+    struct Vertex
+    {
+        float x;
+        float y;
+        float value;
+    };
+
     static std::array<Vertex, 4U> constexpr vertices{Vertex{-1.0F,  1.0F, 0.0F},  // Top left.
                                                      Vertex{-1.0F, -1.0F, 0.0F},  // Bottom left.
                                                      Vertex{ 1.0F,  1.0F, 1.0F},  // Top right.
@@ -88,14 +94,12 @@ void Legend::initializeGL() {
 
 void Legend::createShaderProgram()
 {
-    m_shaderProgramColorMap.addShaderFromSourceFile(QOpenGLShader::Vertex,   ":/shaders/passthrough2d.vert");
+    m_shaderProgramColorMap.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/passthrough2d.vert");
     m_shaderProgramColorMap.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/scalarData_texture.frag");
     m_shaderProgramColorMap.link();
 
     m_uniformLocationTexture = m_shaderProgramColorMap.uniformLocation("textureSampler");
     Q_ASSERT(m_uniformLocationTexture != -1);
-
-    m_shaderProgramColorMap.bind();
 
     qDebug() << "m_shaderProgramColormap initialized.";
 }
@@ -139,11 +143,13 @@ void Legend::updateColorMap(std::vector<Color> const &colorMap)
 
 void Legend::paintGL()
 {
-    glUniform1i(m_uniformLocationTexture, 0);
+    m_shaderProgramColorMap.bind();
 
+    glUniform1i(m_uniformLocationTexture, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, m_textureLocation);
     glBindVertexArray(m_vao);
+
     glDrawElements(GL_TRIANGLES,
                    6U,
                    GL_UNSIGNED_SHORT,

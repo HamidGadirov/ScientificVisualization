@@ -7,8 +7,8 @@ void Visualization::mouseMoveEvent(QMouseEvent *ev)
 {
     // The mx, my coordinates are given from the UI with (0,0) at top left.
     // Here (0,0) is converted to bottom left, as the Visualization class requires it.
-    int const mx = ev->position().x();
-    int const my = height() - ev->position().y();
+    auto const mx = static_cast<int>(ev->position().x());
+    int const my = height() - static_cast<int>(ev->position().y());
 
     input_drag(mx, my);
 }
@@ -30,8 +30,8 @@ void Visualization::input_drag(int const mx, int my)
     Y = std::clamp(Y, static_cast<size_t>(0), m_DIM - 1);
 
     // Add force at the cursor location.
-    float dx = mx - lmx;
-    float dy = my - lmy;
+    auto dx = static_cast<float>(mx - lmx);
+    auto dy = static_cast<float>(my - lmy);
     float const length = std::sqrt(std::pow(dx, 2.0F) + std::pow(dy, 2.0F));
 
     if (length != 0.0F)

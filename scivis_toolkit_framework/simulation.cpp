@@ -37,10 +37,10 @@ void Simulation::initializeDataStructures()
     m_vy0.resize(m_numberOfSamples, 0.0F);
 
     // Set pocketfft parameters
-    shape_in = {m_DIM, m_DIM};
-    stride_in = {static_cast<long>(m_DIM * sizeof(float)), sizeof(float)};
-    stride_out = {static_cast<long>((m_DIM + 2U) * sizeof(float)), sizeof(std::complex<float>)};
-    axes = {0U, 1U};
+    m_shapeIn = {m_DIM, m_DIM};
+    m_strideIn = {static_cast<long>(m_DIM * sizeof(float)), sizeof(float)};
+    m_strideOut = {static_cast<long>((m_DIM + 2U) * sizeof(float)), sizeof(std::complex<float>)};
+    m_axes = {0U, 1U};
 }
 
 void Simulation::resetData()
@@ -59,9 +59,9 @@ void Simulation::resetData()
 void Simulation::solve()
 {
     // n is an integer alias for m_DIM.
-    int const n = static_cast<int>(m_DIM);
+    auto const n = static_cast<int>(m_DIM);
 
-    auto const applyTimeStep = [=](float const v, float const v0) { return v + m_dt * v0; };
+    auto const applyTimeStep = [this](float const v, float const v0) { return v + m_dt * v0; };
     std::transform(m_vx.cbegin(), m_vx.cend(), m_vx0.cbegin(), m_vx.begin(), applyTimeStep);
     std::transform(m_vy.cbegin(), m_vy.cend(), m_vy0.cbegin(), m_vy.begin(), applyTimeStep);
 
@@ -91,7 +91,7 @@ void Simulation::solve()
                 i0 = (n + (i0 % n)) % n;
                 int const i1 = (i0 + 1) % n;
 
-                int j0 = static_cast<int>(std::floor(y0));
+                auto j0 = static_cast<int>(std::floor(y0));
                 float const t = y0 - j0;
                 j0 = (n + (j0 % n)) % n;
                 int const j1 = (j0 + 1) % n;
@@ -116,8 +116,8 @@ void Simulation::solve()
     std::vector<std::complex<float>> vx0_fft(m_DIM * (m_DIM / 2U + 1U));
     std::vector<std::complex<float>> vy0_fft(m_DIM * (m_DIM / 2U + 1U));
 
-    pocketfft::r2c(shape_in, stride_in, stride_out, axes, true, m_vx0.data(), vx0_fft.data(), 1.0F);
-    pocketfft::r2c(shape_in, stride_in, stride_out, axes, true, m_vy0.data(), vy0_fft.data(), 1.0F);
+    pocketfft::r2c(m_shapeIn, m_strideIn, m_strideOut, m_axes, true, m_vx0.data(), vx0_fft.data(), 1.0F);
+    pocketfft::r2c(m_shapeIn, m_strideIn, m_strideOut, m_axes, true, m_vy0.data(), vy0_fft.data(), 1.0F);
 
     for (size_t j = 0U; j < m_DIM; ++j)
     {
@@ -125,7 +125,7 @@ void Simulation::solve()
         for (size_t i = 0U; i < m; ++i)
         {
             auto const x = static_cast<float>(i);
-            float const y = j <= (m_DIM / 2U) ? static_cast<float>(j) : static_cast<float>(j) - m_DIM;
+            float const y = j <= (m_DIM / 2U) ? static_cast<float>(j) : static_cast<float>(j) - static_cast<float>(m_DIM);
             float const r = std::pow(x, 2.0F) + std::pow(y, 2.0F);
             if (r == 0.0F)
                 continue;
@@ -136,18 +136,15 @@ void Simulation::solve()
             std::complex<float> const V{vy0_fft[idx]};
 
             float const filterFactor = std::exp(-r * m_dt * m_viscosity);
-            vx0_fft[idx].real(filterFactor * ((1.0F - x * x / r) * U.real() - x * y / r * V.real()));
-            vx0_fft[idx].imag(filterFactor * ((1.0F - x * x / r) * U.imag() - x * y / r * V.imag()));
-
-            vy0_fft[idx].real(filterFactor * (-y * x / r * U.real() + (1.0F - y * y / r) * V.real()));
-            vy0_fft[idx].imag(filterFactor * (-y * x / r * U.imag() + (1.0F - y * y / r) * V.imag()));
+            vx0_fft[idx] = filterFactor * ((1.0F - x * x / r) * U - x * y / r * V);
+            vy0_fft[idx] = filterFactor * (-y * x / r * U + (1.0F - y * y / r) * V);
         }
     }
 
-    float const normalizationFactor = 1.0F / (m_DIM * m_DIM);
+    float const normalizationFactor = 1.0F / static_cast<float>(m_DIM * m_DIM);
     // Note: stride_in and stride_out are now reversed
-    pocketfft::c2r(shape_in, stride_out, stride_in, axes, false, vx0_fft.data(), m_vx.data(), normalizationFactor);
-    pocketfft::c2r(shape_in, stride_out, stride_in, axes, false, vy0_fft.data(), m_vy.data(), normalizationFactor);
+    pocketfft::c2r(m_shapeIn, m_strideOut, m_strideIn, m_axes, false, vx0_fft.data(), m_vx.data(), normalizationFactor);
+    pocketfft::c2r(m_shapeIn, m_strideOut, m_strideIn, m_axes, false, vy0_fft.data(), m_vy.data(), normalizationFactor);
 }
 
 // diffuse_matter: This function diffuses matter that has been placed in the velocity field. It's almost identical to the
@@ -193,14 +190,11 @@ void Simulation::diffuse_matter()
 void Simulation::set_forces()
 {
     // Reduce density and copy to current density.
-    std::transform(m_rho.cbegin(), m_rho.cend(), m_rho0.begin(),
-                   std::bind(std::multiplies<>(), std::placeholders::_1, 0.995F));
+    std::transform(m_rho.cbegin(), m_rho.cend(), m_rho0.begin(), [] (auto const e) { return 0.995F * e; });
 
     // Reduce force.
-    std::transform(m_fx.begin(), m_fx.end(), m_fx.begin(),
-                   std::bind(std::multiplies<>(), std::placeholders::_1, 0.85F));
-    std::transform(m_fy.begin(), m_fy.end(), m_fy.begin(),
-                   std::bind(std::multiplies<>(), std::placeholders::_1, 0.85F));
+    std::transform(m_fx.cbegin(), m_fx.cend(), m_fx.begin(), [] (auto const e) { return 0.85F * e; });
+    std::transform(m_fy.cbegin(), m_fy.cend(), m_fy.begin(), [] (auto const e) { return 0.85F * e; });
 
     // Copy forces to velocities.
     std::copy(m_fx.cbegin(), m_fx.cend(), m_vx0.begin());

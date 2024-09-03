@@ -25,7 +25,7 @@ void MainWindow::on_LICStepSizeFactorDoubleSpinBox_valueChanged(double arg1)
     auto const visualizationPtr = findChildSafe<Visualization*>("visualizationOpenGLWidget");
     visualizationPtr->setLicStepSize(static_cast<float>(arg1));
 
-    ui->LICStepSizeFactorHorizontalSlider->setValue(arg1 * 100.0);
+    ui->LICStepSizeFactorHorizontalSlider->setValue(static_cast<int>(arg1 * 100.0));
 }
 
 void MainWindow::on_LICStepSizeFactorHorizontalSlider_valueChanged(int value)

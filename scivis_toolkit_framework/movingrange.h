@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include <QVector2D>
+
 #include <cstddef>
 #include <queue>
 
@@ -20,7 +21,7 @@ public:
     MovingRange(size_t const windowSize, QVector2D const initialValue);
 
     void update(QVector2D const newValue);
-    QVector2D range() const;
+    [[nodiscard]] QVector2D range() const;
 
     void setWindowSize(size_t const windowSize);
 

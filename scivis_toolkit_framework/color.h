@@ -3,7 +3,9 @@
 
 struct Color
 {
-    float r, g, b;
+    float r;
+    float g;
+    float b;
 
     Color operator+(Color const other) const
     {

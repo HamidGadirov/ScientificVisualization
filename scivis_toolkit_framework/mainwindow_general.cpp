@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QString>
 #include <QLCDNumber>
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,7 +23,7 @@ std::vector<Color> MainWindow::enumToColorMap(ColorMap const colorMap, size_t nu
     switch (colorMap)
     {
         case ColorMap::Grayscale: ret = Texture::createGrayscaleTexture(numberOfColors); break;
-        case ColorMap::Rainbow: ret = Texture::createRainbowTexture(numberOfColors); break;
+        case ColorMap::Turbo: ret = Texture::createTurboTexture(numberOfColors); break;
         case ColorMap::HeatMap: ret = Texture::createHeatTexture(numberOfColors); break;
         case ColorMap::BlueYellow: ret = Texture::createBlueYellowTexture(numberOfColors); break;
         case ColorMap::Custom3Color:

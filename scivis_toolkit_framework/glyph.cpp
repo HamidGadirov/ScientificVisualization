@@ -153,8 +153,8 @@ std::pair<std::vector<QVector3D>, std::vector<unsigned short>> Glyph::arrow3D(fl
     }
 
     // bottom of cone
-    unsigned short startIdx = numberOfVerticesCylinder; // idx of origin of cone
-    unsigned short finalIdx = numberOfVerticesCylinder + numberOfVerticesCone - 1U;
+    unsigned short const startIdx = numberOfVerticesCylinder; // idx of origin of cone
+    unsigned short const finalIdx = numberOfVerticesCylinder + numberOfVerticesCone - 1U;
     previousIdx = finalIdx - 1U;
     for (unsigned short idx = startIdx + 1U; idx < finalIdx; ++idx)
     {

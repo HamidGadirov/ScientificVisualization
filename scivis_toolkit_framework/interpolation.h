@@ -23,6 +23,6 @@ namespace interpolation
 
         return interpolatedValues;
     }
-};
+}
 
 #endif // INTERPOLATION_H

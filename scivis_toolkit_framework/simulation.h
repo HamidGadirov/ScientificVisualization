@@ -3,7 +3,6 @@
 
 #include "pocketfft_hdronly.h"
 
-#include <memory>
 #include <vector>
 
 class Simulation
@@ -23,10 +22,10 @@ class Simulation
     std::vector<float> m_rho, m_rho0;   // Smoke density at the current (rho) and previous (rho0) moment.
 
     // pocketfft parameters
-    pocketfft::shape_t shape_in;
-    pocketfft::stride_t stride_in;
-    pocketfft::stride_t stride_out;
-    pocketfft::shape_t axes;
+    pocketfft::shape_t m_shapeIn;
+    pocketfft::stride_t m_strideIn;
+    pocketfft::stride_t m_strideOut;
+    pocketfft::shape_t m_axes;
 
     // Functions
 
@@ -43,41 +42,52 @@ class Simulation
 public:
     // Functions
     Simulation(size_t const DIM);
+    Simulation(Simulation const&) = default;
+    Simulation& operator=(Simulation const&) = default;
+    Simulation(Simulation&&) = default;
+    Simulation& operator=(Simulation&&) = default;
     ~Simulation() = default;
 
     void doOneSimulationStep();
 
     // Getters
-    std::vector<float> density() const;
-    std::vector<float> densityInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const;
+    [[nodiscard]] std::vector<float> density() const;
+    [[nodiscard]] std::vector<float> densityInterpolated(size_t const numberOfRows,
+                                                         size_t const numberOfColumns) const;
 
-    std::vector<float> const &velocityX() const;
-    std::vector<float> const &velocityY() const;
+    [[nodiscard]] std::vector<float> const &velocityX() const;
+    [[nodiscard]] std::vector<float> const &velocityY() const;
 
-    std::vector<float> velocityXInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const;
-    std::vector<float> velocityYInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const;
+    [[nodiscard]] std::vector<float> velocityXInterpolated(size_t const numberOfRows,
+                                                           size_t const numberOfColumns) const;
+    [[nodiscard]] std::vector<float> velocityYInterpolated(size_t const numberOfRows,
+                                                           size_t const numberOfColumns) const;
 
-    std::vector<float> velocityMagnitude() const;
-    std::vector<float> velocityMagnitudeInterpolated(size_t const numberOfRows, size_t const numberOfColums) const;
+    [[nodiscard]] std::vector<float> velocityMagnitude() const;
+    [[nodiscard]] std::vector<float> velocityMagnitudeInterpolated(
+        size_t const numberOfRows, size_t const numberOfColums) const;
 
-    std::vector<float> forceFieldXInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const;
-    std::vector<float> forceFieldYInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const;
+    [[nodiscard]] std::vector<float> forceFieldXInterpolated(size_t const numberOfRows,
+                                                             size_t const numberOfColumns) const;
+    [[nodiscard]] std::vector<float> forceFieldYInterpolated(size_t const numberOfRows,
+                                                             size_t const numberOfColumns) const;
 
-    std::vector<float> forceFieldMagnitude() const;
-    std::vector<float> forceFieldMagnitudeInterpolated(size_t const numberOfRows, size_t const numberOfColumns) const;
+    [[nodiscard]] std::vector<float> forceFieldMagnitude() const;
+    [[nodiscard]] std::vector<float> forceFieldMagnitudeInterpolated(
+        size_t const numberOfRows, size_t const numberOfColumns) const;
 
-    float dt() const;
-    float viscosity() const;
-    float rhoInjected() const;
+    [[nodiscard]] float dt() const;
+    [[nodiscard]] float viscosity() const;
+    [[nodiscard]] float rhoInjected() const;
 
-    float vx(size_t const idx) const;
-    float vy(size_t const idx) const;
-    float vx0(size_t const idx) const;
-    float vy0(size_t const idx) const;
+    [[nodiscard]] float vx(size_t const idx) const;
+    [[nodiscard]] float vy(size_t const idx) const;
+    [[nodiscard]] float vx0(size_t const idx) const;
+    [[nodiscard]] float vy0(size_t const idx) const;
 
-    float fx(size_t const idx) const;
-    float fy(size_t const idx) const;
-    float rho(size_t const idx) const;
+    [[nodiscard]] float fx(size_t const idx) const;
+    [[nodiscard]] float fy(size_t const idx) const;
+    [[nodiscard]] float rho(size_t const idx) const;
 
     // Setters
     void setDIM(size_t const DIM);

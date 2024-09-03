@@ -4,7 +4,7 @@
 enum class ColorMap
 {
     Grayscale,
-    Rainbow,
+    Turbo,
     HeatMap,
     BlueYellow,
     Custom3Color
